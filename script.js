@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const addBtn = document.getElementById('add-site-btn');
     const contextMenu = document.getElementById('context-menu');
-    
+
     // Modal 元素
     const modalOverlay = document.getElementById('modal-overlay');
     const modalTitle = document.getElementById('modal-title');
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Google', url: 'https://www.google.com', icon: '' }, // 空 icon 会自动抓取
         { name: 'GitHub', url: 'https://github.com', icon: '' }
     ];
-    
+
     // 加载数据
     loadSites();
 
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div'); // 改为 div 以便处理点击事件
             card.className = 'site-card';
             card.dataset.index = index; // 绑定索引
-            
+
             // 图标逻辑：优先使用自定义 Base64/URL，否则使用 Google Favicon API
             let iconSrc = site.icon;
             if (!iconSrc) {
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 4. 弹窗与添加/编辑逻辑
-    // addBtn.addEventListener('click', () => openModal(false));
+    addBtn.addEventListener('click', () => openModal(false));
 
     function openModal(isEdit) {
         modalOverlay.classList.remove('hidden');
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalTitle.innerText = "编辑网站";
             inputName.value = site.name;
             inputUrl.value = site.url;
-            
+
             // 判断当前 icon 是 URL 还是 Base64
             if (site.icon && !site.icon.startsWith('data:')) {
                 inputIconUrl.value = site.icon;
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 tempBase64Icon = e.target.result; // 保存 Base64 字符串
                 // 可以在这里做一个小的预览逻辑，如果需要的话
                 alert("图片已选择，保存后生效");
@@ -174,9 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
             finalIcon = iconUrl;
         } else if (currentEditIndex > -1) {
             // 如果是编辑模式，且没做修改，保持原样（如果原来是Base64，这里要小心不要覆盖）
-             const oldIcon = sites[currentEditIndex].icon;
-             // 如果没上传新图，也没填新URL，且本来就有图，则保留原图
-             if(oldIcon) finalIcon = oldIcon;
+            const oldIcon = sites[currentEditIndex].icon;
+            // 如果没上传新图，也没填新URL，且本来就有图，则保留原图
+            if (oldIcon) finalIcon = oldIcon;
         }
 
         const newSite = { name, url, icon: finalIcon };
@@ -193,31 +193,28 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal();
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-    // ... 前面的代码不变 ...
-
-    // === 新的搜索逻辑 (替换原来的 searchInput.addEventListener) ===
     const searchForm = document.getElementById('search-form');
-    const searchInput = document.getElementById('search-input');
+    // const searchInputBox = document.getElementById('search-input');
 
-    if (searchForm) {
+    if (searchForm && searchInput) {
         searchForm.addEventListener('submit', (e) => {
-            // 1. 阻止表单默认的刷新页面行为
+            // 1. 必须阻止默认提交行为
             e.preventDefault();
-            
-            // 2. 获取输入内容
-            const query = searchInput.value.trim();
-            
-            console.log(query)
-            // 3. 执行跳转
-            // if (query) {
-            //     window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-            // }
-        });
-    } else {
-        console.error("找不到搜索表单，请检查 HTML id='search-form' 是否存在");
-    }
 
-    // ... 其他代码不变 ...
-});
+            const query = searchInput.value.trim();
+            if (query) {
+                // 2. 构造搜索 URL
+                const targetUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+
+                // 3. 核心修复：使用 Chrome 扩展专用 API 跳转
+                // 这能绕过几乎所有 window.location 的权限限制
+                if (typeof chrome !== 'undefined' && chrome.tabs) {
+                    chrome.tabs.update({ url: targetUrl });
+                } else {
+                    // 兜底方案
+                    window.open(targetUrl);
+                }
+            }
+        });
+    }
 });
