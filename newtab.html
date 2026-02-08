@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>New Tab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="logo">
+            <h1>MyTab</h1>
+        </div>
+
+        <div class="search-box">
+            <form id="search-form">
+                <input type="text" id="search-input" placeholder="在 Google 上搜索..." autocomplete="off">
+            </form>
+        </div>
+
+        <div class="grid-container" id="site-grid">
+        </div>
+
+        <!-- <div class="add-button-container">
+            <button id="add-site-btn" class="add-btn">+</button>
+        </div> -->
+    </div>
+
+    <div id="context-menu" class="context-menu">
+        <div class="menu-item" id="menu-edit">编辑</div>
+        <div class="menu-item delete" id="menu-delete">删除</div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <h2 id="modal-title">添加网站</h2>
+
+            <div class="form-group">
+                <label>名称</label>
+                <input type="text" id="site-name" placeholder="例如: Bilibili">
+            </div>
+
+            <div class="form-group">
+                <label>链接 (URL)</label>
+                <input type="text" id="site-url" placeholder="https://...">
+            </div>
+
+            <div class="form-group">
+                <label>图标设置 (二选一)</label>
+                <input type="text" id="site-icon-url" placeholder="粘贴图标 URL 地址...">
+                <div class="divider">或者</div>
+                <input type="file" id="site-icon-file" accept="image/*">
+            </div>
+
+            <div class="modal-buttons">
+                <button id="modal-cancel">取消</button>
+                <button id="modal-save" class="primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

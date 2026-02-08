@@ -1,0 +1,283 @@
+/* 1. 定义颜色变量 */
+:root {
+    /* === 默认：浅色模式 (Light Mode) === */
+    --bg-color: #f0f0f4;          /* Firefox 风格浅灰背景 */
+    --text-color: #2b2a33;        /* 深灰文字 */
+    --card-bg: #ffffff;           /* 卡片背景纯白 */
+    --accent-color: #0060df;      /* 强调色 (深蓝) */
+    
+    --input-bg: #ffffff;          /* 输入框背景 */
+    --input-border: #cdcdd4;      /* 输入框边框 */
+    --input-text: #2b2a33;
+    
+    --hover-bg: rgba(0, 0, 0, 0.08); /* 悬停颜色 (深色微透) */
+    --shadow-color: rgba(0, 0, 0, 0.1); /* 投影颜色 */
+    
+    --modal-bg: #ffffff;          /* 弹窗背景 */
+    --menu-bg: #ffffff;           /* 右键菜单背景 */
+    --menu-border: #e0e0e6;
+}
+
+/* === 深色模式检测 (Dark Mode) === */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #2b2a33;      /* 深色背景 */
+        --text-color: #f9f9fa;    /* 浅色文字 */
+        --card-bg: #42414d;       /* 卡片背景 */
+        --accent-color: #00ddff;  /* 强调色 (亮青) */
+        
+        --input-bg: #42414d;
+        --input-border: #52525e;
+        --input-text: #ffffff;
+        
+        --hover-bg: rgba(255, 255, 255, 0.1); /* 悬停颜色 (白色微透) */
+        --shadow-color: rgba(0, 0, 0, 0.4);
+        
+        --modal-bg: #38383d;
+        --menu-bg: #38383d;
+        --menu-border: #52525e;
+    }
+}
+
+/* 全局重置 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s; /* 切换模式时的平滑过渡 */
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Logo */
+.logo {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.logo h1 {
+    font-size: 3.5rem;
+    font-weight: 300;
+    letter-spacing: 2px;
+    opacity: 0.9;
+}
+
+/* 搜索框区域 */
+.search-box {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 50px;
+}
+
+/* 新增：让表单填满区域并居中 */
+.search-box form {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Input 样式保持不变，但确保 max-width 生效 */
+.search-box input {
+    width: 100%;
+    max-width: 500px;
+    padding: 16px 24px;
+    border-radius: 30px;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    font-size: 16px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    outline: none;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+/* 图标网格 */
+.grid-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.site-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+}
+
+.site-card:hover {
+    background-color: var(--hover-bg);
+}
+
+.site-icon {
+    width: 60px;
+    height: 60px;
+    background-color: #fff; /* 图标底色始终保持白色，以免透明png在黑底看不清 */
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px var(--shadow-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.site-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.site-title {
+    font-size: 13px;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.9;
+}
+
+/* 添加按钮 */
+.add-button-container {
+    margin-top: 10px;
+}
+
+.add-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--input-border);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.2s;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.add-btn:hover {
+    background-color: var(--hover-bg);
+    transform: rotate(90deg);
+}
+
+/* 右键菜单 */
+.context-menu {
+    display: none;
+    position: absolute;
+    background-color: var(--menu-bg);
+    border: 1px solid var(--menu-border);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    z-index: 1000;
+    min-width: 120px;
+    overflow: hidden;
+}
+
+.menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-color);
+    transition: background 0.1s;
+}
+
+.menu-item:hover { background-color: var(--accent-color); color: #fff; }
+.menu-item.delete:hover { background-color: #ff4d4d; color: white; }
+
+/* 弹窗 (Modal) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.hidden { display: none !important; }
+
+.modal {
+    background-color: var(--modal-bg);
+    color: var(--text-color);
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    border: 1px solid var(--input-border);
+}
+
+.modal h2 { margin-bottom: 20px; font-weight: 400; text-align: center; }
+
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-size: 12px; opacity: 0.7; }
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    outline: none;
+}
+.form-group input:focus { border-color: var(--accent-color); }
+
+.divider { font-size: 12px; opacity: 0.5; margin: 8px 0; text-align: center;}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.modal-buttons button {
+    padding: 8px 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+#modal-cancel { background: transparent; color: var(--text-color); border: 1px solid var(--input-border); opacity: 0.7; }
+#modal-cancel:hover { opacity: 1; border-color: var(--text-color); }
+
+#modal-save { background-color: var(--accent-color); color: #fff; }
+#modal-save:hover { filter: brightness(1.1); }
