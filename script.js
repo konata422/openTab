@@ -27,9 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Bilibili', url: 'https://www.bilibili.com', icon: 'icon/bilibili.svg', isShowBorder: true },
         { name: 'Reddit', url: 'https://www.reddit.com', icon: 'icon/reddit.png', isShowBorder: true },
         { name: 'Gemini', url: 'https://gemini.google.com/app?hl=zh', icon: 'icon/gemini.png', isShowBorder: true },
-        // { name: 'ChatGPT', url: 'https://chat.openai.com/', icon: 'icon/chatgpt.png', isShowBorder: false },
         { name: 'Pinterest', url: 'https://www.pinterest.com', icon: 'icon/pinterest.png', isShowBorder: false },
-        // { name: 'Wikipedia', url: 'https://www.wikipedia.org', icon: '', isShowBorder: false }
         { name:'DeepSeek', url: 'https://chat.deepseek.com/', icon: 'icon/deepseek.png', isShowBorder: true }
     ];
     
@@ -39,14 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadSites() {
         const stored = localStorage.getItem('myTabSites');
-        sites = stored ? JSON.parse(stored) : defaultSites;
-        
-        // 确保每个 site 都有 isShowBorder 属性，如果没有则默认为 true
-        // sites = sites.map(site => ({
-        //     ...site,
-        //     isShowBorder: site.isShowBorder !== false ? true : false
-        // }));
-        
+        sites = stored ? JSON.parse(stored) : defaultSites;        
         renderGrid();
     }
 

@@ -16,6 +16,10 @@
   "action": {
     "default_title": "OpenTab"
   },
+
+  "icons": {
+    "128": "icon/extensionicon.png"
+  },
   "web_accessible_resources": [
     {
       "resources": ["icon/*"],
