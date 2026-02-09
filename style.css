@@ -10,7 +10,7 @@
     --input-bg: rgba(255, 255, 255, 0.85);
     --input-text: #000000;
     --shadow-color: rgba(0, 0, 0, 0.08);
-    --ms-text-opacity: 0.6; /* 浅色模式下 Microsoft 文字稍淡 */
+    --ot-text-opacity: 0.6; /* 浅色模式下 OpenTab 文字稍淡 */
     --no-icon-bg: #ffffff; /* isShowBorder=false 时的默认背景（浅色） */
     --icon-bg: #ffffff; /* isShowBorder=true 时图标容器背景（浅色） */
     --menu-bg: #ffffff; /* 右键菜单背景（浅色） */
@@ -33,7 +33,7 @@
         --input-bg: #323741;      /* 搜索框变为深灰蓝色 */
         --input-text: #ffffff;
         --shadow-color: rgba(0, 0, 0, 0.4);
-        --ms-text-opacity: 0.9;   /* 深色模式下 Microsoft 文字更亮 */
+        --ot-text-opacity: 0.9;   /* 深色模式下 OpenTab 文字更亮 */
         --no-icon-bg: #000000; /* isShowBorder=false 时的背景（深色） */
         --icon-bg: #000000; /* isShowBorder=true 时图标容器背景（深色） */
         --menu-bg: #2a2a2a; /* 右键菜单背景（深色） */
@@ -336,29 +336,44 @@ body {
     user-select: none; /* 防止文字被选中 */
 }
 
-/* 四色方块容器 */
-.ms-logo {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 3px; /* 方块之间的细缝 */
-    width: 46px;
-    height: 46px;
+/* OpenTab 图标 - 基础矩形加号样式（还原） */
+.ot-logo {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* 单个小方块的基础样式 */
-.ms-box {
-    width: 100%;
-    height: 100%;
+.ot-logo::before {
+    content: '';
+    position: absolute;
+    width: 42px;
+    height: 30px;
+    background: linear-gradient(135deg, #0078d4 0%, #00d4ff 100%);
+    border-radius: 4px;
+    box-shadow: -4px 4px 0 rgba(0, 120, 212, 0.3), inset 0 -2px 4px rgba(0,0,0,0.1);
 }
 
-/* Microsoft 官方四色 */
-.ms-box.red    { background-color: #f25022; }
-.ms-box.green  { background-color: #7fbb00; }
-.ms-box.blue   { background-color: #00a1f1; }
-.ms-box.yellow { background-color: #ffb900; }
+.ot-logo::after {
+    content: '+';
+    position: absolute;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
 
-/* Microsoft 文字样式 */
-.ms-text {
+/* 隐藏原来的四色方块 */
+.ot-box {
+    display: none !important;
+}
+
+/* OpenTab 文字样式 */
+.ot-text {
     font-size: 42px;
     font-weight: 600; /* Segoe UI Bold 风格 */
     color: var(--text-color);
@@ -370,7 +385,38 @@ body {
 
 /* 微调：深浅模式下的文字阴影（可选，增加质感） */
 @media (prefers-color-scheme: light) {
-    .ms-text {
+    .ot-text {
         text-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
+}
+
+/* OpenTab 图标 - 圆形徽章备用样式 */
+.ot-logo-alt {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ot-logo-alt::before {
+    content: '';
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffd166 0%, #f77f00 60%);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.18), inset 0 -4px 8px rgba(0,0,0,0.06);
+}
+
+.ot-logo-alt::after {
+    content: 'OT';
+    position: absolute;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 18px;
+    z-index: 1;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
 }
