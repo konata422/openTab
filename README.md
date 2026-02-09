@@ -1,4 +1,4 @@
-# openNewTab、
+# openNewTab
 ![icon](./icon/extensionicon.png "图片标题")
 
 An open new tab extension for Chrome Browser
