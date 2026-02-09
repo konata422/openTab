@@ -55,7 +55,7 @@
           <label>图标设置 (二选一)</label>
           <div class="avatar-row">
             <div class="avatar-preview" id="avatar-preview">
-              <img id="avatar-preview-img" src="" alt="头像预览" />
+              <img id="avatar-preview-img" src="" alt="预览" />
             </div>
             <div style="flex:1; margin-left:10px;">
               <input
@@ -69,14 +69,42 @@
           </div>
         </div>
 
-        <div class="form-group" id="id-group">
-          <label>ID (可选)</label>
-          <input type="text" id="site-id" placeholder="例如: my-favorite" />
-        </div>
+        <!-- site modal 不再显示 ID 字段（site ID 仅用于顶部 profile） -->
 
         <div class="modal-buttons">
           <button id="modal-cancel">取消</button>
           <button id="modal-save" class="primary">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Modal: 仅用于编辑顶部头像与 ID -->
+    <div id="profile-modal-overlay" class="modal-overlay hidden">
+      <div class="modal">
+        <h2 id="profile-modal-title">编辑个人信息</h2>
+
+        <div class="form-group">
+          <label>头像</label>
+          <div class="avatar-row">
+            <div class="avatar-preview" id="profile-avatar-preview">
+              <img id="profile-avatar-preview-img" src="" alt="预览" />
+            </div>
+            <div style="flex:1; margin-left:10px;">
+              <input type="text" id="profile-icon-url" placeholder="粘贴头像 URL 地址..." />
+              <div class="divider">或者</div>
+              <input type="file" id="profile-icon-file" accept="image/*" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>ID (显示为顶部标题)</label>
+          <input type="text" id="profile-id" placeholder="例如: my-name" />
+        </div>
+
+        <div class="modal-buttons">
+          <button id="profile-modal-cancel">取消</button>
+          <button id="profile-modal-save" class="primary">保存</button>
         </div>
       </div>
     </div>

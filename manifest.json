@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "OpenTab",
   "version": "0.1",
-  "description": "仿Edge平板端风格的新标签页",
+  "description": "适用于Chrome/Edge浏览器的新标签页",
   
   "chrome_url_overrides": {
     "newtab": "newtab.html"

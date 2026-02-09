@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let sites = [];
     let currentEditIndex = -1; // -1 表示新增模式
     let tempBase64Icon = null; // 临时存储上传的图片 Base64
-    let editingProfile = false; // 是否正在编辑顶部个人信息
+    let tempProfileBase64 = null; // 临时存储 profile 上传的 Base64
 
     // 1. 初始化数据
     const defaultSites = [
@@ -103,8 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.appendChild(iconDiv);
             card.appendChild(titleDiv);
 
-            console.log('Rendering site:', site,site.isShowBorder);
-
             // 根据 isShowBorder 决定是否显示图标容器的背景/阴影，以及图标的宽高
             if (site.isShowBorder == false) {
                 iconDiv.classList.add('no-icon-bg');
@@ -156,21 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. 弹窗与添加/编辑逻辑
     addBtn.addEventListener('click', () => openModal(false));
 
-    // 顶部 Logo 点击——打开个人信息编辑（头像 + ID）
+    // 顶部 Logo 点击：打开独立的 profile modal（只编辑头像与 ID）
     const otLogoContainer = document.getElementById('opentab-logo');
     const otLogoElem = document.querySelector('.ot-logo');
     const otTextElem = document.querySelector('.ot-text');
-    const otIdElem = document.getElementById('opentab-id');
-
-    // 表单组元素（用于在编辑 profile 时隐藏/显示）
-    const nameGroup = document.getElementById('name-group');
-    const urlGroup = document.getElementById('url-group');
-    const iconGroup = document.getElementById('icon-group');
-    const idGroup = document.getElementById('id-group');
 
     function applyProfile(profile) {
         if (!profile) return;
-        // 当有头像时，显示头像并隐藏默认的图形标志
         if (profile.avatar) {
             otLogoContainer.classList.add('has-avatar');
             otLogoElem.innerHTML = `<img class="ot-avatar-img" src="${profile.avatar}" />`;
@@ -178,8 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
             otLogoContainer.classList.remove('has-avatar');
             otLogoElem.innerHTML = '';
         }
-
-        // 用 ID 替换 OpenTab 文本（若为空则显示默认文字）
         otTextElem.textContent = profile.id || 'OpenTab';
     }
 
@@ -189,36 +177,27 @@ document.addEventListener('DOMContentLoaded', () => {
         try { applyProfile(JSON.parse(storedProfile)); } catch (e) {}
     }
 
-    function openProfileModal() {
-        editingProfile = true;
-        // 隐藏与站点相关的输入项，仅显示头像与ID
-        if (nameGroup) nameGroup.style.display = 'none';
-        if (urlGroup) urlGroup.style.display = 'none';
-        if (iconGroup) iconGroup.style.display = 'block';
-        if (idGroup) idGroup.style.display = 'block';
-
-        tempBase64Icon = null;
-        inputFile.value = '';
-
-        const stored = localStorage.getItem('openTabProfile');
-        const profile = stored ? JSON.parse(stored) : {};
-        modalTitle.innerText = '编辑个人信息';
-        inputId.value = profile.id || '';
-        avatarPreviewImg.src = profile.avatar || '';
-        modalOverlay.classList.remove('hidden');
-    }
-
-    function resetModalGroups() {
-        if (nameGroup) nameGroup.style.display = '';
-        if (urlGroup) urlGroup.style.display = '';
-        if (iconGroup) iconGroup.style.display = '';
-        if (idGroup) idGroup.style.display = '';
-    }
+    // Profile modal 元素
+    const profileModalOverlay = document.getElementById('profile-modal-overlay');
+    const profileIconUrl = document.getElementById('profile-icon-url');
+    const profileFile = document.getElementById('profile-icon-file');
+    const profilePreview = document.getElementById('profile-avatar-preview');
+    const profilePreviewImg = document.getElementById('profile-avatar-preview-img');
+    const profileIdInput = document.getElementById('profile-id');
+    const profileSaveBtn = document.getElementById('profile-modal-save');
+    const profileCancelBtn = document.getElementById('profile-modal-cancel');
 
     if (otLogoContainer) {
         otLogoContainer.addEventListener('click', (e) => {
             e.stopPropagation();
-            openProfileModal();
+            // 打开 profile modal
+            const stored = localStorage.getItem('openTabProfile');
+            const profile = stored ? JSON.parse(stored) : {};
+            profileIdInput.value = profile.id || '';
+            profilePreviewImg.src = profile.avatar || '';
+            tempProfileBase64 = null;
+            profileIconUrl.value = '';
+            profileModalOverlay.classList.remove('hidden');
         });
     }
 
@@ -233,9 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
             inputName.value = site.name;
             inputUrl.value = site.url;
 
-            // 填充 ID
-            const inputId = document.getElementById('site-id');
-            inputId.value = site.id || '';
 
             // 判断当前 icon 是 URL 还是 Base64
             if (site.icon && !site.icon.startsWith('data:')) {
@@ -258,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
             inputName.value = '';
             inputUrl.value = '';
             inputIconUrl.value = '';
-            document.getElementById('site-id').value = '';
             document.getElementById('avatar-preview-img').src = '';
         }
     }
@@ -267,9 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOverlay.classList.add('hidden');
     }
 
+    // 站点 modal 取消
     btnCancel.addEventListener('click', () => {
-        editingProfile = false;
-        resetModalGroups();
         closeModal();
     });
 
@@ -301,31 +275,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 6. 保存逻辑（支持站点与 profile 两种模式）
+    // Profile modal 的文件上传与预览
+    if (profileFile) {
+        profileFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    tempProfileBase64 = ev.target.result;
+                    profilePreviewImg.src = tempProfileBase64;
+                    alert('头像已选择，保存后生效');
+                };
+                if (file.size > 500 * 1024) alert('注意：图片较大，建议使用小图标。');
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // 点击 profile 头像预览触发文件选择
+    if (profilePreview) {
+        profilePreview.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (profileFile) profileFile.click();
+        });
+    }
+
+    // 6. 站点保存逻辑（仅处理站点 modal）
     btnSave.addEventListener('click', () => {
-        if (editingProfile) {
-            // 仅保存头像与 ID
-            const idVal = inputId.value.trim();
-            const iconUrl = inputIconUrl.value.trim();
-
-            let finalIcon = '';
-            if (tempBase64Icon) finalIcon = tempBase64Icon;
-            else if (iconUrl) finalIcon = iconUrl;
-
-            const profile = { id: idVal, avatar: finalIcon };
-            localStorage.setItem('openTabProfile', JSON.stringify(profile));
-            applyProfile(profile);
-            editingProfile = false;
-            resetModalGroups();
-            closeModal();
-            return;
-        }
-
-        // 站点新增/编辑逻辑（原有行为）
         const name = inputName.value.trim();
         const url = inputUrl.value.trim();
         const iconUrl = inputIconUrl.value.trim();
-        const idVal = document.getElementById('site-id').value.trim();
+        const idVal = (currentEditIndex > -1) ? (sites[currentEditIndex]?.id || '') : '';
 
         if (!name || !url) {
             alert('名称和网址不能为空');
@@ -354,6 +334,30 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSites();
         closeModal();
     });
+
+    // Profile modal 保存/取消
+    if (profileCancelBtn) {
+        profileCancelBtn.addEventListener('click', () => {
+            profileModalOverlay.classList.add('hidden');
+            tempProfileBase64 = null;
+        });
+    }
+
+    if (profileSaveBtn) {
+        profileSaveBtn.addEventListener('click', () => {
+            const idVal = profileIdInput.value.trim();
+            const iconUrl = profileIconUrl.value.trim();
+            let finalIcon = '';
+            if (tempProfileBase64) finalIcon = tempProfileBase64;
+            else if (iconUrl) finalIcon = iconUrl;
+
+            const profile = { id: idVal, avatar: finalIcon };
+            localStorage.setItem('openTabProfile', JSON.stringify(profile));
+            applyProfile(profile);
+            profileModalOverlay.classList.add('hidden');
+            tempProfileBase64 = null;
+        });
+    }
 
     const searchForm = document.getElementById('search-form');
     // const searchInputBox = document.getElementById('search-input');

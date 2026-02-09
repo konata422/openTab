@@ -193,6 +193,20 @@
     opacity: 0.9;
 }
 
+/* 禁止手动选中网站图标及下面的文字，防止拖拽图标 */
+.site-card, .site-card * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.site-icon img,
+.avatar-preview img {
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
 /* 添加按钮 */
 .add-button-container {
     position: fixed;    /* 核心：相对于浏览器窗口固定 */
@@ -370,11 +384,6 @@ body {
     text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
-/* 隐藏原来的四色方块 */
-.ot-box {
-    display: none !important;
-}
-
 /* OpenTab 文字样式 */
 .ot-text {
     font-size: 42px;
@@ -396,7 +405,6 @@ body {
 .ot-avatar-img {
     width: 60px;
     height: 60px;
-    border-radius: 8px;
     object-fit: cover;
 }
 
