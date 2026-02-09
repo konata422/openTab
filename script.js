@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputUrl = document.getElementById('site-url');
     const inputIconUrl = document.getElementById('site-icon-url');
     const inputFile = document.getElementById('site-icon-file');
+    const inputId = document.getElementById('site-id');
+    const avatarPreview = document.getElementById('avatar-preview');
+    const avatarPreviewImg = document.getElementById('avatar-preview-img');
     const btnSave = document.getElementById('modal-save');
     const btnCancel = document.getElementById('modal-cancel');
 
@@ -19,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let sites = [];
     let currentEditIndex = -1; // -1 表示新增模式
     let tempBase64Icon = null; // 临时存储上传的图片 Base64
+    let editingProfile = false; // 是否正在编辑顶部个人信息
 
     // 1. 初始化数据
     const defaultSites = [
@@ -91,6 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
             titleDiv.className = 'site-title';
             titleDiv.textContent = site.name;
 
+            // 若存在自定义 id，显示为次要文本（title 的 tooltip）
+            if (site.id) {
+                titleDiv.title = site.id;
+            }
+
             card.appendChild(iconDiv);
             card.appendChild(titleDiv);
 
@@ -104,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.classList.add('icon-with-border');
             }
 
-            // 左键点击跳转
+            // 左键点击卡片跳转
             card.addEventListener('click', () => {
                 let url = site.url;
                 if (!url.startsWith('http')) url = 'https://' + url;
@@ -147,6 +156,72 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. 弹窗与添加/编辑逻辑
     addBtn.addEventListener('click', () => openModal(false));
 
+    // 顶部 Logo 点击——打开个人信息编辑（头像 + ID）
+    const otLogoContainer = document.getElementById('opentab-logo');
+    const otLogoElem = document.querySelector('.ot-logo');
+    const otTextElem = document.querySelector('.ot-text');
+    const otIdElem = document.getElementById('opentab-id');
+
+    // 表单组元素（用于在编辑 profile 时隐藏/显示）
+    const nameGroup = document.getElementById('name-group');
+    const urlGroup = document.getElementById('url-group');
+    const iconGroup = document.getElementById('icon-group');
+    const idGroup = document.getElementById('id-group');
+
+    function applyProfile(profile) {
+        if (!profile) return;
+        // 当有头像时，显示头像并隐藏默认的图形标志
+        if (profile.avatar) {
+            otLogoContainer.classList.add('has-avatar');
+            otLogoElem.innerHTML = `<img class="ot-avatar-img" src="${profile.avatar}" />`;
+        } else {
+            otLogoContainer.classList.remove('has-avatar');
+            otLogoElem.innerHTML = '';
+        }
+
+        // 用 ID 替换 OpenTab 文本（若为空则显示默认文字）
+        otTextElem.textContent = profile.id || 'OpenTab';
+    }
+
+    // 初始化加载 profile
+    const storedProfile = localStorage.getItem('openTabProfile');
+    if (storedProfile) {
+        try { applyProfile(JSON.parse(storedProfile)); } catch (e) {}
+    }
+
+    function openProfileModal() {
+        editingProfile = true;
+        // 隐藏与站点相关的输入项，仅显示头像与ID
+        if (nameGroup) nameGroup.style.display = 'none';
+        if (urlGroup) urlGroup.style.display = 'none';
+        if (iconGroup) iconGroup.style.display = 'block';
+        if (idGroup) idGroup.style.display = 'block';
+
+        tempBase64Icon = null;
+        inputFile.value = '';
+
+        const stored = localStorage.getItem('openTabProfile');
+        const profile = stored ? JSON.parse(stored) : {};
+        modalTitle.innerText = '编辑个人信息';
+        inputId.value = profile.id || '';
+        avatarPreviewImg.src = profile.avatar || '';
+        modalOverlay.classList.remove('hidden');
+    }
+
+    function resetModalGroups() {
+        if (nameGroup) nameGroup.style.display = '';
+        if (urlGroup) urlGroup.style.display = '';
+        if (iconGroup) iconGroup.style.display = '';
+        if (idGroup) idGroup.style.display = '';
+    }
+
+    if (otLogoContainer) {
+        otLogoContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openProfileModal();
+        });
+    }
+
     function openModal(isEdit) {
         modalOverlay.classList.remove('hidden');
         tempBase64Icon = null; // 重置临时图片
@@ -158,11 +233,24 @@ document.addEventListener('DOMContentLoaded', () => {
             inputName.value = site.name;
             inputUrl.value = site.url;
 
+            // 填充 ID
+            const inputId = document.getElementById('site-id');
+            inputId.value = site.id || '';
+
             // 判断当前 icon 是 URL 还是 Base64
             if (site.icon && !site.icon.startsWith('data:')) {
                 inputIconUrl.value = site.icon;
             } else {
                 inputIconUrl.value = '';
+            }
+
+            // 更新头像预览
+            const previewImg = document.getElementById('avatar-preview-img');
+            if (site.icon) {
+                previewImg.src = site.icon;
+            } else {
+                // 使用 google favicon 作为回退
+                previewImg.src = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
             }
         } else {
             modalTitle.innerText = "添加新网站";
@@ -170,6 +258,8 @@ document.addEventListener('DOMContentLoaded', () => {
             inputName.value = '';
             inputUrl.value = '';
             inputIconUrl.value = '';
+            document.getElementById('site-id').value = '';
+            document.getElementById('avatar-preview-img').src = '';
         }
     }
 
@@ -177,7 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOverlay.classList.add('hidden');
     }
 
-    btnCancel.addEventListener('click', closeModal);
+    btnCancel.addEventListener('click', () => {
+        editingProfile = false;
+        resetModalGroups();
+        closeModal();
+    });
 
     // 5. 处理文件上传 (转 Base64)
     inputFile.addEventListener('change', (e) => {
@@ -187,6 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = function (e) {
                 tempBase64Icon = e.target.result; // 保存 Base64 字符串
                 // 可以在这里做一个小的预览逻辑，如果需要的话
+                const previewImg = document.getElementById('avatar-preview-img');
+                previewImg.src = tempBase64Icon;
                 alert("图片已选择，保存后生效");
             };
             // 限制大小提示
@@ -197,40 +293,61 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 6. 保存逻辑
+    // 点击头像预览直接触发文件选择
+    if (avatarPreview) {
+        avatarPreview.addEventListener('click', (e) => {
+            e.stopPropagation();
+            inputFile.click();
+        });
+    }
+
+    // 6. 保存逻辑（支持站点与 profile 两种模式）
     btnSave.addEventListener('click', () => {
+        if (editingProfile) {
+            // 仅保存头像与 ID
+            const idVal = inputId.value.trim();
+            const iconUrl = inputIconUrl.value.trim();
+
+            let finalIcon = '';
+            if (tempBase64Icon) finalIcon = tempBase64Icon;
+            else if (iconUrl) finalIcon = iconUrl;
+
+            const profile = { id: idVal, avatar: finalIcon };
+            localStorage.setItem('openTabProfile', JSON.stringify(profile));
+            applyProfile(profile);
+            editingProfile = false;
+            resetModalGroups();
+            closeModal();
+            return;
+        }
+
+        // 站点新增/编辑逻辑（原有行为）
         const name = inputName.value.trim();
         const url = inputUrl.value.trim();
         const iconUrl = inputIconUrl.value.trim();
+        const idVal = document.getElementById('site-id').value.trim();
 
         if (!name || !url) {
             alert('名称和网址不能为空');
             return;
         }
 
-        // 确定最终图标
-        // 优先级：上传的图片 > 手填的URL链接 > 空(使用默认API)
         let finalIcon = '';
         if (tempBase64Icon) {
             finalIcon = tempBase64Icon;
         } else if (iconUrl) {
             finalIcon = iconUrl;
         } else if (currentEditIndex > -1) {
-            // 如果是编辑模式，且没做修改，保持原样（如果原来是Base64，这里要小心不要覆盖）
             const oldIcon = sites[currentEditIndex].icon;
-            // 如果没上传新图，也没填新URL，且本来就有图，则保留原图
             if (oldIcon) finalIcon = oldIcon;
         }
 
-        // 新增/编辑时保留原有的 isShowBorder 值（编辑模式）或默认 true（新增）
         const isShowBorderVal = (currentEditIndex > -1) ? (sites[currentEditIndex]?.isShowBorder ?? true) : true;
-        const newSite = { name, url, icon: finalIcon, isShowBorder: isShowBorderVal };
+        const newSite = { name, url, icon: finalIcon, isShowBorder: isShowBorderVal, id: idVal };
 
         if (currentEditIndex > -1) {
-            // 编辑
             sites[currentEditIndex] = newSite;
         } else {
-            // 新增
             sites.push(newSite);
         }
 

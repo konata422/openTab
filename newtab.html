@@ -8,9 +8,10 @@
 
   <body>
     <div class="container">
-      <div class="logo">
+      <div class="logo" id="opentab-logo">
         <div class="ot-logo"></div>
         <span class="ot-text">OpenTab</span>
+        <span class="ot-id" id="opentab-id"></span>
       </div>
 
       <div class="search-box">
@@ -40,25 +41,37 @@
       <div class="modal">
         <h2 id="modal-title">添加网站</h2>
 
-        <div class="form-group">
+        <div class="form-group" id="name-group">
           <label>名称</label>
           <input type="text" id="site-name" placeholder="例如: Bilibili" />
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="url-group">
           <label>链接 (URL)</label>
           <input type="text" id="site-url" placeholder="https://..." />
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="icon-group">
           <label>图标设置 (二选一)</label>
-          <input
-            type="text"
-            id="site-icon-url"
-            placeholder="粘贴图标 URL 地址..."
-          />
-          <div class="divider">或者</div>
-          <input type="file" id="site-icon-file" accept="image/*" />
+          <div class="avatar-row">
+            <div class="avatar-preview" id="avatar-preview">
+              <img id="avatar-preview-img" src="" alt="头像预览" />
+            </div>
+            <div style="flex:1; margin-left:10px;">
+              <input
+                type="text"
+                id="site-icon-url"
+                placeholder="粘贴图标 URL 地址..."
+              />
+              <div class="divider">或者</div>
+              <input type="file" id="site-icon-file" accept="image/*" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" id="id-group">
+          <label>ID (可选)</label>
+          <input type="text" id="site-id" placeholder="例如: my-favorite" />
         </div>
 
         <div class="modal-buttons">
