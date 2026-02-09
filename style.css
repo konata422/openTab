@@ -13,6 +13,12 @@
     --ms-text-opacity: 0.6; /* 浅色模式下 Microsoft 文字稍淡 */
     --no-icon-bg: #ffffff; /* isShowBorder=false 时的默认背景（浅色） */
     --icon-bg: #ffffff; /* isShowBorder=true 时图标容器背景（浅色） */
+    --menu-bg: #ffffff; /* 右键菜单背景（浅色） */
+    --menu-border: #e0e0e0; /* 右键菜单边框（浅色） */
+    --accent-color: #0078d4; /* 强调色（浅色） */
+    --hover-bg: rgba(0, 0, 0, 0.05); /* 悬停背景（浅色） */
+    --modal-bg: #ffffff; /* 弹窗背景（浅色） */
+    --input-border: #d0d0d0; /* 输入框边框（浅色） */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,6 +36,12 @@
         --ms-text-opacity: 0.9;   /* 深色模式下 Microsoft 文字更亮 */
         --no-icon-bg: #000000; /* isShowBorder=false 时的背景（深色） */
         --icon-bg: #000000; /* isShowBorder=true 时图标容器背景（深色） */
+        --menu-bg: #2a2a2a; /* 右键菜单背景（深色） */
+        --menu-border: #3a3a3a; /* 右键菜单边框（深色） */
+        --accent-color: #0078d4; /* 强调色（深色） */
+        --hover-bg: rgba(255, 255, 255, 0.1); /* 悬停背景（深色） */
+        --modal-bg: #2a2a2a; /* 弹窗背景（深色） */
+        --input-border: #3a3a3a; /* 输入框边框（深色） */
     }
 }
 
