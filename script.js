@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // { name: 'ChatGPT', url: 'https://chat.openai.com/', icon: 'icon/chatgpt.png', isShowBorder: false },
         { name: 'Pinterest', url: 'https://www.pinterest.com', icon: 'icon/pinterest.png', isShowBorder: false },
         // { name: 'Wikipedia', url: 'https://www.wikipedia.org', icon: '', isShowBorder: false }
-        { name:'DeepSeek', url: 'https://www.deepseek.com', icon: 'icon/deepseek.png', isShowBorder: true }
+        { name:'DeepSeek', url: 'https://chat.deepseek.com/', icon: 'icon/deepseek.png', isShowBorder: true }
     ];
     
 
