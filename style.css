@@ -124,7 +124,7 @@
     padding: 10px;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, opacity 0.2s, transform 0.2s;
     text-decoration: none;
     color: inherit;
     position: relative;
@@ -132,6 +132,20 @@
 
 .site-card:hover {
     background-color: var(--hover-bg);
+}
+
+/* 拖拽时的样式 */
+.site-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.9);
+}
+
+/* 拖拽悬停目标的样式 */
+.site-card.drag-over {
+    background-color: var(--accent-color);
+    opacity: 0.8;
+    border-radius: 8px;
+    box-shadow: 0 0 8px var(--accent-color);
 }
 
 .site-icon {

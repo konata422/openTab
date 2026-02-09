@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentEditIndex = -1; // -1 表示新增模式
     let tempBase64Icon = null; // 临时存储上传的图片 Base64
     let tempProfileBase64 = null; // 临时存储 profile 上传的 Base64
+    let draggedIndex = null; // 记录正在拖拽的卡片索引
 
     // 1. 初始化数据
     const defaultSites = [
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div'); // 改为 div 以便处理点击事件
             card.className = 'site-card';
             card.dataset.index = index; // 绑定索引
+            card.draggable = true; // 启用拖拽
 
             // 图标逻辑：优先使用自定义 Base64/URL，否则使用 Google Favicon API
             const googleFavicon = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
@@ -122,6 +124,47 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 showContextMenu(e.pageX, e.pageY, index);
+            });
+
+            // 拖拽排序事件
+            card.addEventListener('dragstart', (e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', card.innerHTML);
+                card.classList.add('dragging');
+                draggedIndex = index; // 记录被拖拽的索引
+            });
+
+            card.addEventListener('dragend', (e) => {
+                card.classList.remove('dragging');
+                // 移除所有拖拽悬停样式
+                document.querySelectorAll('.site-card').forEach(c => {
+                    c.classList.remove('drag-over');
+                });
+            });
+
+            card.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (index !== draggedIndex) {
+                    card.classList.add('drag-over');
+                }
+            });
+
+            card.addEventListener('dragleave', () => {
+                card.classList.remove('drag-over');
+            });
+
+            card.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                card.classList.remove('drag-over');
+                
+                if (index !== draggedIndex && draggedIndex !== null) {
+                    // 交换两个元素的位置
+                    [sites[draggedIndex], sites[index]] = [sites[index], sites[draggedIndex]];
+                    saveSites(); // 保存排序后的结果
+                }
+                draggedIndex = null;
             });
 
             gridContainer.appendChild(card);
