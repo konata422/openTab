@@ -4,27 +4,32 @@
   "version": "0.1",
   "default_locale": "zh_CN",
   "description": "__MSG_extDesc__",
-  
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
-
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "tabs"
   ],
-
+  "host_permissions": [
+    "https://www.google.com/*",
+    "*://*/*"
+  ],
   "action": {
     "default_title": "__MSG_actionTitle__"
   },
-
   "icons": {
     "128": "icon/extensionicon.png"
   },
   "web_accessible_resources": [
     {
-      "resources": ["icon/*"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "icon/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

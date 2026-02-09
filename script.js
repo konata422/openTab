@@ -1,87 +1,137 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM 元素
+    // --- DOM 元素 ---
     const gridContainer = document.getElementById('site-grid');
     const searchInput = document.getElementById('search-input');
     const addBtn = document.getElementById('add-site-btn');
     const contextMenu = document.getElementById('context-menu');
 
-    // Modal 元素
+    // Modal 元素 (网站编辑)
     const modalOverlay = document.getElementById('modal-overlay');
     const modalTitle = document.getElementById('modal-title');
     const inputName = document.getElementById('site-name');
     const inputUrl = document.getElementById('site-url');
     const inputIconUrl = document.getElementById('site-icon-url');
     const inputFile = document.getElementById('site-icon-file');
-    const inputId = document.getElementById('site-id');
+    // const inputId = document.getElementById('site-id'); // 原代码未解构，保留引用
     const avatarPreview = document.getElementById('avatar-preview');
-    const avatarPreviewImg = document.getElementById('avatar-preview-img');
+    // const avatarPreviewImg = document.getElementById('avatar-preview-img'); // 使用时直接获取
     const btnSave = document.getElementById('modal-save');
     const btnCancel = document.getElementById('modal-cancel');
 
-    // 状态变量
+    // Profile 元素
+    const otLogoContainer = document.getElementById('opentab-logo');
+    const otLogoElem = document.querySelector('.ot-logo');
+    const otTextElem = document.querySelector('.ot-text');
+
+    // Profile Modal 元素
+    const profileModalOverlay = document.getElementById('profile-modal-overlay');
+    const profileIconUrl = document.getElementById('profile-icon-url');
+    const profileFile = document.getElementById('profile-icon-file');
+    const profilePreview = document.getElementById('profile-avatar-preview');
+    const profilePreviewImg = document.getElementById('profile-avatar-preview-img');
+    const profileIdInput = document.getElementById('profile-id');
+    const profileSaveBtn = document.getElementById('profile-modal-save');
+    const profileCancelBtn = document.getElementById('profile-modal-cancel');
+
+    // --- 状态变量 ---
     let sites = [];
+    let userProfile = {}; // 新增：在内存中存储 profile 状态
     let currentEditIndex = -1; // -1 表示新增模式
     let tempBase64Icon = null; // 临时存储上传的图片 Base64
     let tempProfileBase64 = null; // 临时存储 profile 上传的 Base64
     let draggedIndex = null; // 记录正在拖拽的卡片索引
 
-    // 1. 初始化数据
+    // --- 1. 初始化数据 ---
     const defaultSites = [
-        { name: 'Google', url: 'https://www.google.com', icon: 'icon/google.png', isShowBorder: true },
-        { name: 'YouTube', url: 'https://www.youtube.com', icon: 'icon/youtube.png', isShowBorder: true },
-        { name: 'Bilibili', url: 'https://www.bilibili.com', icon: 'icon/bilibili.svg', isShowBorder: true },
-        { name: 'Reddit', url: 'https://www.reddit.com', icon: 'icon/reddit.png', isShowBorder: true },
-        { name: 'Gemini', url: 'https://gemini.google.com/app?hl=zh', icon: 'icon/gemini.png', isShowBorder: true },
-        { name: 'Pinterest', url: 'https://www.pinterest.com', icon: 'icon/pinterest.png', isShowBorder: false },
-        { name:'DeepSeek', url: 'https://chat.deepseek.com/', icon: 'icon/deepseek.png', isShowBorder: true }
+        { name: 'Google', url: 'https://www.google.com', icon: '', isShowBorder: true },
+        { name: 'YouTube', url: 'https://www.youtube.com', icon: '', isShowBorder: true },
+        { name: 'Bilibili', url: 'https://www.bilibili.com', icon: '', isShowBorder: true },
+        { name: 'Reddit', url: 'https://www.reddit.com', icon: '', isShowBorder: true },
+        { name: 'Gemini', url: 'https://gemini.google.com/app?hl=zh', icon: '', isShowBorder: true },
+        { name: 'Pinterest', url: 'https://www.pinterest.com', icon: '', isShowBorder: false },
+        { name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: '', isShowBorder: true }
     ];
-    
 
-    // 加载数据
-    loadSites();
+    // 启动加载 (合并加载 Sites 和 Profile)
+    loadData();
 
-    function loadSites() {
-        const stored = localStorage.getItem('myTabSites');
-        sites = stored ? JSON.parse(stored) : defaultSites;        
-        renderGrid();
+    function loadData() {
+        // 使用 chrome.storage.local.get 读取数据
+        chrome.storage.local.get(['myTabSites', 'openTabProfile'], (result) => {
+            // 1. 处理 Sites
+            if (result.myTabSites) {
+                sites = result.myTabSites;
+            } else {
+                sites = defaultSites;
+                // 可选：如果没有数据，写入默认值
+                // chrome.storage.local.set({ myTabSites: defaultSites }); 
+            }
+
+            // 2. 处理 Profile
+            if (result.openTabProfile) {
+                userProfile = result.openTabProfile;
+            } else {
+                userProfile = {};
+            }
+
+            // 3. 渲染页面
+            renderGrid();
+            applyProfile(userProfile);
+        });
     }
 
     function saveSites() {
-        localStorage.setItem('myTabSites', JSON.stringify(sites));
-        renderGrid();
+        // 异步保存到 chrome.storage
+        chrome.storage.local.set({ 'myTabSites': sites }, () => {
+            renderGrid();
+        });
+    }
+    // 辅助函数：将 URL 图片转换为 Base64
+    async function urlToBase64(url) {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.error('Base64转换失败:', error);
+            return null;
+        }
     }
 
-    // 2. 渲染网格
+    // --- 2. 渲染网格 ---
     function renderGrid() {
         gridContainer.innerHTML = '';
         sites.forEach((site, index) => {
-            const card = document.createElement('div'); // 改为 div 以便处理点击事件
+            const card = document.createElement('div');
             card.className = 'site-card';
-            card.dataset.index = index; // 绑定索引
-            card.draggable = true; // 启用拖拽
+            card.dataset.index = index;
+            card.draggable = true;
 
-            // 图标逻辑：优先使用自定义 Base64/URL，否则使用 Google Favicon API
-            const googleFavicon = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
-
-            // 创建元素而非直接 innerHTML，以便添加错误回退逻辑
             const iconDiv = document.createElement('div');
             iconDiv.className = 'site-icon';
 
             const img = document.createElement('img');
             img.alt = site.name || '';
 
-            // 构建候选 src 列表，包含常见的相对路径变体，最后回退到 Google Favicon
+            // 1. 构建候选列表
+            const googleFavicon = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
             const candidates = [];
+
+            // 优先使用已存储的 (可能是 Base64)
             if (site.icon) candidates.push(site.icon);
-            // 如果用户用的是 `icon/`，尝试 `icons/`，反之亦然
-            if (site.icon && site.icon.startsWith('icon/')) candidates.push(site.icon.replace(/^icon\//, 'icons/'));
-            if (site.icon && site.icon.startsWith('icons/')) candidates.push(site.icon.replace(/^icons\//, 'icon/'));
-            // 相对路径可能需要 ./ 前缀
+            // 本地路径尝试
             if (site.icon && !site.icon.match(/^https?:|^data:|^\//)) candidates.push('./' + site.icon);
-            // 最后回退到 Google 提取的 favicon
+            // Google API 兜底
             candidates.push(googleFavicon);
 
             let tryIndex = 0;
+
+            // 加载失败尝试下一个
             img.onerror = function () {
                 tryIndex++;
                 if (tryIndex < candidates.length) {
@@ -89,23 +139,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            // 开始尝试第一个候选
+            // --- 核心修改：加载成功后转 Base64 存储 ---
+            img.onload = async function () {
+                // 判断条件：当前显示的 src 是网络地址 (http开头)，且原本存储的不是 Base64 (data:开头)
+                // 这意味着我们是从网络 (Google API 或 URL) 加载的图片，需要转换并保存
+                if (img.src.startsWith('http') && (!site.icon || !site.icon.startsWith('data:'))) {
+
+                    // 防止重复执行：如果当前 src 和 site.icon 完全一样(即只是普通URL)，也进行转换
+                    // 但通常 site.icon 此时可能是空的，或者是一个失效的旧 URL
+
+                    const base64Data = await urlToBase64(img.src);
+
+                    if (base64Data) {
+                        // 更新内存数据
+                        sites[index].icon = base64Data;
+                        // 异步保存到 Chrome Storage
+                        chrome.storage.local.set({ 'myTabSites': sites }, () => {
+                            console.log(`Base64 saved for ${site.name}`);
+                        });
+                    }
+                }
+            };
+
+            // 启动加载
             img.src = candidates[0] || googleFavicon;
+
             iconDiv.appendChild(img);
 
             const titleDiv = document.createElement('div');
             titleDiv.className = 'site-title';
             titleDiv.textContent = site.name;
-
-            // 若存在自定义 id，显示为次要文本（title 的 tooltip）
-            if (site.id) {
-                titleDiv.title = site.id;
-            }
+            if (site.id) titleDiv.title = site.id;
 
             card.appendChild(iconDiv);
             card.appendChild(titleDiv);
 
-            // 根据 isShowBorder 决定是否显示图标容器的背景/阴影，以及图标的宽高
             if (site.isShowBorder == false) {
                 iconDiv.classList.add('no-icon-bg');
                 img.classList.add('icon-full-size');
@@ -113,56 +181,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.classList.add('icon-with-border');
             }
 
-            // 左键点击卡片跳转
+            // 点击跳转
             card.addEventListener('click', () => {
                 let url = site.url;
                 if (!url.startsWith('http')) url = 'https://' + url;
-                window.location.href = url;
+                if (typeof chrome !== 'undefined' && chrome.tabs) {
+                    chrome.tabs.update({ url: url });
+                } else {
+                    window.location.href = url;
+                }
             });
 
-            // 右键点击触发菜单
+            // 右键菜单
             card.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 showContextMenu(e.pageX, e.pageY, index);
             });
 
-            // 拖拽排序事件
+            // 拖拽事件
             card.addEventListener('dragstart', (e) => {
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/html', card.innerHTML);
                 card.classList.add('dragging');
-                draggedIndex = index; // 记录被拖拽的索引
+                draggedIndex = index;
             });
-
-            card.addEventListener('dragend', (e) => {
+            card.addEventListener('dragend', () => {
                 card.classList.remove('dragging');
-                // 移除所有拖拽悬停样式
-                document.querySelectorAll('.site-card').forEach(c => {
-                    c.classList.remove('drag-over');
-                });
+                document.querySelectorAll('.site-card').forEach(c => c.classList.remove('drag-over'));
             });
-
             card.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
-                if (index !== draggedIndex) {
-                    card.classList.add('drag-over');
-                }
+                if (index !== draggedIndex) card.classList.add('drag-over');
             });
-
-            card.addEventListener('dragleave', () => {
-                card.classList.remove('drag-over');
-            });
-
+            card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
             card.addEventListener('drop', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 card.classList.remove('drag-over');
-                
                 if (index !== draggedIndex && draggedIndex !== null) {
-                    // 交换两个元素的位置
                     [sites[draggedIndex], sites[index]] = [sites[index], sites[draggedIndex]];
-                    saveSites(); // 保存排序后的结果
+                    chrome.storage.local.set({ 'myTabSites': sites }, () => renderGrid());
                 }
                 draggedIndex = null;
             });
@@ -171,7 +230,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. 右键菜单逻辑
+    // 记得把 urlToBase64 函数放在 renderGrid 外面或者里面都可以
+    async function urlToBase64(url) {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.warn('无法转换图片为Base64 (可能是跨域限制):', url);
+            return null;
+        }
+    }
+
+    // --- 3. 右键菜单逻辑 ---
     function showContextMenu(x, y, index) {
         currentEditIndex = index;
         contextMenu.style.display = 'block';
@@ -179,10 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
         contextMenu.style.top = `${y}px`;
     }
 
-    // 点击其他地方关闭菜单
     document.addEventListener('click', () => contextMenu.style.display = 'none');
 
-    // 菜单操作
     document.getElementById('menu-edit').addEventListener('click', () => {
         openModal(true);
     });
@@ -194,13 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 4. 弹窗与添加/编辑逻辑
+    // --- 4. 弹窗与添加/编辑逻辑 ---
     addBtn.addEventListener('click', () => openModal(false));
-
-    // 顶部 Logo 点击：打开独立的 profile modal（只编辑头像与 ID）
-    const otLogoContainer = document.getElementById('opentab-logo');
-    const otLogoElem = document.querySelector('.ot-logo');
-    const otTextElem = document.querySelector('.ot-text');
 
     function applyProfile(profile) {
         if (!profile) return;
@@ -214,30 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
         otTextElem.textContent = profile.id || 'OpenTab';
     }
 
-    // 初始化加载 profile
-    const storedProfile = localStorage.getItem('openTabProfile');
-    if (storedProfile) {
-        try { applyProfile(JSON.parse(storedProfile)); } catch (e) {}
-    }
-
-    // Profile modal 元素
-    const profileModalOverlay = document.getElementById('profile-modal-overlay');
-    const profileIconUrl = document.getElementById('profile-icon-url');
-    const profileFile = document.getElementById('profile-icon-file');
-    const profilePreview = document.getElementById('profile-avatar-preview');
-    const profilePreviewImg = document.getElementById('profile-avatar-preview-img');
-    const profileIdInput = document.getElementById('profile-id');
-    const profileSaveBtn = document.getElementById('profile-modal-save');
-    const profileCancelBtn = document.getElementById('profile-modal-cancel');
-
+    // 顶部 Logo 点击：打开 Profile Modal
     if (otLogoContainer) {
         otLogoContainer.addEventListener('click', (e) => {
             e.stopPropagation();
-            // 打开 profile modal
-            const stored = localStorage.getItem('openTabProfile');
-            const profile = stored ? JSON.parse(stored) : {};
-            profileIdInput.value = profile.id || '';
-            profilePreviewImg.src = profile.avatar || '';
+            // 直接使用内存中的 userProfile，无需重新读取 storage
+            profileIdInput.value = userProfile.id || '';
+            profilePreviewImg.src = userProfile.avatar || '';
             tempProfileBase64 = null;
             profileIconUrl.value = '';
             profileModalOverlay.classList.remove('hidden');
@@ -246,8 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openModal(isEdit) {
         modalOverlay.classList.remove('hidden');
-        tempBase64Icon = null; // 重置临时图片
-        inputFile.value = ''; // 清空文件选择
+        tempBase64Icon = null;
+        inputFile.value = '';
 
         if (isEdit && currentEditIndex > -1) {
             const site = sites[currentEditIndex];
@@ -255,20 +307,16 @@ document.addEventListener('DOMContentLoaded', () => {
             inputName.value = site.name;
             inputUrl.value = site.url;
 
-
-            // 判断当前 icon 是 URL 还是 Base64
             if (site.icon && !site.icon.startsWith('data:')) {
                 inputIconUrl.value = site.icon;
             } else {
                 inputIconUrl.value = '';
             }
 
-            // 更新头像预览
             const previewImg = document.getElementById('avatar-preview-img');
             if (site.icon) {
                 previewImg.src = site.icon;
             } else {
-                // 使用 google favicon 作为回退
                 previewImg.src = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
             }
         } else {
@@ -285,57 +333,51 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOverlay.classList.add('hidden');
     }
 
-    // 站点 modal 取消
-    btnCancel.addEventListener('click', () => {
-        closeModal();
-    });
+    btnCancel.addEventListener('click', closeModal);
 
-    // 5. 处理文件上传 (转 Base64)
+    // --- 5. 处理文件上传 (转 Base64) ---
+    // 网站图标上传
     inputFile.addEventListener('change', (e) => {
         const file = e.target.files[0];
+        handleFileSelect(file, (base64) => {
+            tempBase64Icon = base64;
+            document.getElementById('avatar-preview-img').src = base64;
+        });
+    });
+
+    // Profile 头像上传
+    if (profileFile) {
+        profileFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFileSelect(file, (base64) => {
+                tempProfileBase64 = base64;
+                profilePreviewImg.src = base64;
+            });
+        });
+    }
+
+    // 通用文件处理函数
+    function handleFileSelect(file, callback) {
         if (file) {
             const reader = new FileReader();
             reader.onload = function (e) {
-                tempBase64Icon = e.target.result; // 保存 Base64 字符串
-                // 可以在这里做一个小的预览逻辑，如果需要的话
-                const previewImg = document.getElementById('avatar-preview-img');
-                previewImg.src = tempBase64Icon;
+                callback(e.target.result);
                 alert("图片已选择，保存后生效");
             };
-            // 限制大小提示
-            if (file.size > 500 * 1024) { // 大于 500KB
+            if (file.size > 500 * 1024) {
                 alert("注意：图片较大，可能占用存储空间，建议使用小图标。");
             }
             reader.readAsDataURL(file);
         }
-    });
+    }
 
-    // 点击头像预览直接触发文件选择
+    // 点击预览图触发上传
     if (avatarPreview) {
         avatarPreview.addEventListener('click', (e) => {
             e.stopPropagation();
             inputFile.click();
         });
     }
-
-    // Profile modal 的文件上传与预览
-    if (profileFile) {
-        profileFile.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (ev) {
-                    tempProfileBase64 = ev.target.result;
-                    profilePreviewImg.src = tempProfileBase64;
-                    alert('头像已选择，保存后生效');
-                };
-                if (file.size > 500 * 1024) alert('注意：图片较大，建议使用小图标。');
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    // 点击 profile 头像预览触发文件选择
     if (profilePreview) {
         profilePreview.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -343,7 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 6. 站点保存逻辑（仅处理站点 modal）
+    // --- 6. 保存逻辑 ---
+    // 保存网站
     btnSave.addEventListener('click', () => {
         const name = inputName.value.trim();
         const url = inputUrl.value.trim();
@@ -374,11 +417,11 @@ document.addEventListener('DOMContentLoaded', () => {
             sites.push(newSite);
         }
 
-        saveSites();
+        saveSites(); // 这里的 saveSites 已经是改过后的 chrome.storage 版本
         closeModal();
     });
 
-    // Profile modal 保存/取消
+    // 保存 Profile
     if (profileCancelBtn) {
         profileCancelBtn.addEventListener('click', () => {
             profileModalOverlay.classList.add('hidden');
@@ -391,36 +434,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const idVal = profileIdInput.value.trim();
             const iconUrl = profileIconUrl.value.trim();
             let finalIcon = '';
-            if (tempProfileBase64) finalIcon = tempProfileBase64;
-            else if (iconUrl) finalIcon = iconUrl;
 
-            const profile = { id: idVal, avatar: finalIcon };
-            localStorage.setItem('openTabProfile', JSON.stringify(profile));
-            applyProfile(profile);
-            profileModalOverlay.classList.add('hidden');
-            tempProfileBase64 = null;
+            // 优先使用新上传的，其次是输入框URL，最后保持原有（如果有逻辑需要保持）
+            // 这里简单逻辑：如果没传新的，且输入框没填，就看原userProfile
+            if (tempProfileBase64) {
+                finalIcon = tempProfileBase64;
+            } else if (iconUrl) {
+                finalIcon = iconUrl;
+            } else {
+                // 如果用户没有做任何修改，保持原头像
+                finalIcon = userProfile.avatar || '';
+            }
+
+            // 更新内存变量
+            userProfile = { id: idVal, avatar: finalIcon };
+
+            // 异步保存到 chrome.storage
+            chrome.storage.local.set({ 'openTabProfile': userProfile }, () => {
+                applyProfile(userProfile);
+                profileModalOverlay.classList.add('hidden');
+                tempProfileBase64 = null;
+            });
         });
     }
 
+    // --- 7. 搜索功能 ---
     const searchForm = document.getElementById('search-form');
-    // const searchInputBox = document.getElementById('search-input');
-
     if (searchForm && searchInput) {
         searchForm.addEventListener('submit', (e) => {
-            // 1. 必须阻止默认提交行为
             e.preventDefault();
-
             const query = searchInput.value.trim();
             if (query) {
-                // 2. 构造搜索 URL
                 const targetUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
-
-                // 3. 核心修复：使用 Chrome 扩展专用 API 跳转
-                // 这能绕过几乎所有 window.location 的权限限制
                 if (typeof chrome !== 'undefined' && chrome.tabs) {
                     chrome.tabs.update({ url: targetUrl });
                 } else {
-                    // 兜底方案
                     window.open(targetUrl);
                 }
             }
