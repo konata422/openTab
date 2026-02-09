@@ -34,8 +34,8 @@
         --input-text: #ffffff;
         --shadow-color: rgba(0, 0, 0, 0.4);
         --ot-text-opacity: 0.9;   /* 深色模式下 OpenTab 文字更亮 */
-        --no-icon-bg: #000000; /* isShowBorder=false 时的背景（深色） */
-        --icon-bg: #000000; /* isShowBorder=true 时图标容器背景（深色） */
+        --no-icon-bg: #323741; /* isShowBorder=false 时的背景（深色） */
+        --icon-bg: #323741; /* isShowBorder=true 时图标容器背景（深色） */
         --menu-bg: #2a2a2a; /* 右键菜单背景（深色） */
         --menu-border: #3a3a3a; /* 右键菜单边框（深色） */
         --accent-color: #0078d4; /* 强调色（深色） */
@@ -469,4 +469,5 @@ body {
     z-index: 1;
     letter-spacing: 1px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+
 }
