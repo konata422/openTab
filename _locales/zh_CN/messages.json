@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "OpenTab - 新标签页"
+  },
+  "extDesc": {
+    "message": "适用于 Edge/Chrome 的自定义新标签页扩展。"
+  },
+  "actionTitle": {
+    "message": "OpenTab"
+  }
+}
