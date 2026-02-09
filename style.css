@@ -39,7 +39,7 @@
 
 .container {
     width: 100%;
-    max-width: 800px;
+    max-width: 1200px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -77,7 +77,7 @@
 /* Input 样式保持不变，但确保 max-width 生效 */
 .search-box input {
     width: 100%;
-    max-width: 500px;
+    max-width: 700px;
     padding: 16px 24px;
     border-radius: 30px;
     border: 1px solid var(--input-border);
@@ -261,7 +261,7 @@
 #modal-cancel { background: transparent; color: var(--text-color); border: 1px solid var(--input-border); opacity: 0.7; }
 #modal-cancel:hover { opacity: 1; border-color: var(--text-color); }
 
-#modal-save { background-color: var(--accent-color); color: #fff; }
+#modal-save { background-color: var(--accent-color); color: #000; }
 #modal-save:hover { filter: brightness(1.1); }
 body {
     /* 使用渐变背景 */
