@@ -22,9 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 1. 初始化数据
     const defaultSites = [
-        { name: 'Google', url: 'https://www.google.com', icon: '' }, // 空 icon 会自动抓取
-        { name: 'GitHub', url: 'https://github.com', icon: '' }
+        { name: 'Google', url: 'https://www.google.com', icon: 'icon/google.png', isShowBorder: true },
+        { name: 'YouTube', url: 'https://www.youtube.com', icon: 'icon/youtube.png', isShowBorder: true },
+        { name: 'Bilibili', url: 'https://www.bilibili.com', icon: 'icon/bilibili.svg', isShowBorder: true },
+        { name: 'Reddit', url: 'https://www.reddit.com', icon: 'icon/reddit.png', isShowBorder: true },
+        { name: 'Gemini', url: 'https://gemini.google.com/app?hl=zh', icon: 'icon/gemini.png', isShowBorder: true },
+        // { name: 'ChatGPT', url: 'https://chat.openai.com/', icon: 'icon/chatgpt.png', isShowBorder: false },
+        { name: 'Pinterest', url: 'https://www.pinterest.com', icon: 'icon/pinterest.png', isShowBorder: false },
+        // { name: 'Wikipedia', url: 'https://www.wikipedia.org', icon: '', isShowBorder: false }
+        { name:'DeepSeek', url: 'https://www.deepseek.com', icon: 'icon/deepseek.png', isShowBorder: true }
     ];
+    
 
     // 加载数据
     loadSites();
@@ -32,6 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadSites() {
         const stored = localStorage.getItem('myTabSites');
         sites = stored ? JSON.parse(stored) : defaultSites;
+        
+        // 确保每个 site 都有 isShowBorder 属性，如果没有则默认为 true
+        // sites = sites.map(site => ({
+        //     ...site,
+        //     isShowBorder: site.isShowBorder !== false ? true : false
+        // }));
+        
         renderGrid();
     }
 
@@ -49,17 +64,54 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.index = index; // 绑定索引
 
             // 图标逻辑：优先使用自定义 Base64/URL，否则使用 Google Favicon API
-            let iconSrc = site.icon;
-            if (!iconSrc) {
-                iconSrc = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
-            }
+            const googleFavicon = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
 
-            card.innerHTML = `
-                <div class="site-icon">
-                    <img src="${iconSrc}" alt="${site.name}">
-                </div>
-                <div class="site-title">${site.name}</div>
-            `;
+            // 创建元素而非直接 innerHTML，以便添加错误回退逻辑
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'site-icon';
+
+            const img = document.createElement('img');
+            img.alt = site.name || '';
+
+            // 构建候选 src 列表，包含常见的相对路径变体，最后回退到 Google Favicon
+            const candidates = [];
+            if (site.icon) candidates.push(site.icon);
+            // 如果用户用的是 `icon/`，尝试 `icons/`，反之亦然
+            if (site.icon && site.icon.startsWith('icon/')) candidates.push(site.icon.replace(/^icon\//, 'icons/'));
+            if (site.icon && site.icon.startsWith('icons/')) candidates.push(site.icon.replace(/^icons\//, 'icon/'));
+            // 相对路径可能需要 ./ 前缀
+            if (site.icon && !site.icon.match(/^https?:|^data:|^\//)) candidates.push('./' + site.icon);
+            // 最后回退到 Google 提取的 favicon
+            candidates.push(googleFavicon);
+
+            let tryIndex = 0;
+            img.onerror = function () {
+                tryIndex++;
+                if (tryIndex < candidates.length) {
+                    img.src = candidates[tryIndex];
+                }
+            };
+
+            // 开始尝试第一个候选
+            img.src = candidates[0] || googleFavicon;
+            iconDiv.appendChild(img);
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'site-title';
+            titleDiv.textContent = site.name;
+
+            card.appendChild(iconDiv);
+            card.appendChild(titleDiv);
+
+            console.log('Rendering site:', site,site.isShowBorder);
+
+            // 根据 isShowBorder 决定是否显示图标容器的背景/阴影，以及图标的宽高
+            if (site.isShowBorder == false) {
+                iconDiv.classList.add('no-icon-bg');
+                img.classList.add('icon-full-size');
+            } else {
+                img.classList.add('icon-with-border');
+            }
 
             // 左键点击跳转
             card.addEventListener('click', () => {
@@ -179,7 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (oldIcon) finalIcon = oldIcon;
         }
 
-        const newSite = { name, url, icon: finalIcon };
+        // 新增/编辑时保留原有的 isShowBorder 值（编辑模式）或默认 true（新增）
+        const isShowBorderVal = (currentEditIndex > -1) ? (sites[currentEditIndex]?.isShowBorder ?? true) : true;
+        const newSite = { name, url, icon: finalIcon, isShowBorder: isShowBorderVal };
 
         if (currentEditIndex > -1) {
             // 编辑

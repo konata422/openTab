@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Microsoft Edge Style New Tab",
-  "version": "1.1",
-  "description": "复刻 Edge 风格的新标签页。",
+  "name": "OpenTab",
+  "version": "0.1",
+  "description": "仿Edge平板端风格的新标签页",
   
   "chrome_url_overrides": {
     "newtab": "newtab.html"
@@ -14,6 +14,12 @@
   ],
 
   "action": {
-    "default_title": "My New Tab"
-  }
+    "default_title": "OpenTab"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icon/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
