@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputUrl = document.getElementById('site-url');
     const inputIconUrl = document.getElementById('site-icon-url');
     const inputFile = document.getElementById('site-icon-file');
+    const showBorderCheckbox = document.getElementById('show-border-checkbox'); // 新增：获取复选框元素
     // const inputId = document.getElementById('site-id'); // 原代码未解构，保留引用
     const avatarPreview = document.getElementById('avatar-preview');
     // const avatarPreviewImg = document.getElementById('avatar-preview-img'); // 使用时直接获取
@@ -319,6 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 previewImg.src = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
             }
+            
+            // 添加：设置复选框状态
+            showBorderCheckbox.checked = site.isShowBorder !== false;
         } else {
             modalTitle.innerText = "添加新网站";
             currentEditIndex = -1;
@@ -326,6 +330,9 @@ document.addEventListener('DOMContentLoaded', () => {
             inputUrl.value = '';
             inputIconUrl.value = '';
             document.getElementById('avatar-preview-img').src = '';
+            
+            // 添加：新网站默认勾选复选框
+            showBorderCheckbox.checked = true;
         }
     }
 
@@ -408,7 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (oldIcon) finalIcon = oldIcon;
         }
 
-        const isShowBorderVal = (currentEditIndex > -1) ? (sites[currentEditIndex]?.isShowBorder ?? true) : true;
+        // 获取复选框的当前状态
+        const isShowBorderVal = showBorderCheckbox.checked;
         const newSite = { name, url, icon: finalIcon, isShowBorder: isShowBorderVal, id: idVal };
 
         if (currentEditIndex > -1) {

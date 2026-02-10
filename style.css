@@ -1,473 +1,562 @@
 :root {
-    /* === 浅色模式 (完美复刻图1) === */
-    --bg-gradient: 
-        radial-gradient(at 0% 100%, rgba(255, 215, 185, 0.6) 0px, transparent 50%), 
-        radial-gradient(at 100% 0%, rgba(185, 225, 255, 0.6) 0px, transparent 50%),
-        #f5f5f7;
+  /* === 浅色模式 (完美复刻图1) === */
+  --bg-gradient:
+    radial-gradient(at 0% 100%, rgba(255, 215, 185, 0.6) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(185, 225, 255, 0.6) 0px, transparent 50%),
+    #f5f5f7;
 
-    --text-color: #333333;
-    --card-bg: rgba(255, 255, 255, 0.6);
-    --input-bg: rgba(255, 255, 255, 0.85);
-    --input-text: #000000;
-    --shadow-color: rgba(0, 0, 0, 0.08);
-    --ot-text-opacity: 0.6; /* 浅色模式下 OpenTab 文字稍淡 */
-    --no-icon-bg: #ffffff; /* isShowBorder=false 时的默认背景（浅色） */
-    --icon-bg: #ffffff; /* isShowBorder=true 时图标容器背景（浅色） */
-    --menu-bg: #ffffff; /* 右键菜单背景（浅色） */
-    --menu-border: #e0e0e0; /* 右键菜单边框（浅色） */
-    --accent-color: #0078d4; /* 强调色（浅色） */
-    --hover-bg: rgba(0, 0, 0, 0.05); /* 悬停背景（浅色） */
-    --modal-bg: #ffffff; /* 弹窗背景（浅色） */
-    --input-border: #d0d0d0; /* 输入框边框（浅色） */
+  --text-color: #333333;
+  --card-bg: rgba(255, 255, 255, 0.6);
+  --input-bg: rgba(255, 255, 255, 0.85);
+  --input-text: #000000;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  --ot-text-opacity: 0.6; /* 浅色模式下 OpenTab 文字稍淡 */
+  --no-icon-bg: #ffffff; /* isShowBorder=false 时的默认背景（浅色） */
+  --icon-bg: #ffffff; /* isShowBorder=true 时图标容器背景（浅色） */
+  --menu-bg: #ffffff; /* 右键菜单背景（浅色） */
+  --menu-border: #e0e0e0; /* 右键菜单边框（浅色） */
+  --accent-color: #0078d4; /* 强调色（浅色） */
+  --hover-bg: rgba(0, 0, 0, 0.05); /* 悬停背景（浅色） */
+  --modal-bg: #ffffff; /* 弹窗背景（浅色） */
+  --input-border: #d0d0d0; /* 输入框边框（浅色） */
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        /* === 深色模式 (完美复刻图2) === */
-        /* 这种蓝黑色更接近 Edge 的原生深色背景 */
-        --bg-gradient: none; 
-        --bg-color: #1c212d; 
+  :root {
+    /* === 深色模式 (完美复刻图2) === */
+    /* 这种蓝黑色更接近 Edge 的原生深色背景 */
+    --bg-gradient: none;
+    --bg-color: #1c212d;
 
-        --text-color: #adb5bd;    /* 文本变为浅灰色 */
-        --card-bg: rgba(255, 255, 255, 0.05); /* 极度透明的卡片 */
-        --input-bg: #323741;      /* 搜索框变为深灰蓝色 */
-        --input-text: #ffffff;
-        --shadow-color: rgba(0, 0, 0, 0.4);
-        --ot-text-opacity: 0.9;   /* 深色模式下 OpenTab 文字更亮 */
-        --no-icon-bg: #323741; /* isShowBorder=false 时的背景（深色） */
-        --icon-bg: #323741; /* isShowBorder=true 时图标容器背景（深色） */
-        --menu-bg: #2a2a2a; /* 右键菜单背景（深色） */
-        --menu-border: #3a3a3a; /* 右键菜单边框（深色） */
-        --accent-color: #0078d4; /* 强调色（深色） */
-        --hover-bg: rgba(255, 255, 255, 0.1); /* 悬停背景（深色） */
-        --modal-bg: #2a2a2a; /* 弹窗背景（深色） */
-        --input-border: #3a3a3a; /* 输入框边框（深色） */
-    }
+    --text-color: #adb5bd; /* 文本变为浅灰色 */
+    --card-bg: rgba(255, 255, 255, 0.05); /* 极度透明的卡片 */
+    --input-bg: #323741; /* 搜索框变为深灰蓝色 */
+    --input-text: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --ot-text-opacity: 0.9; /* 深色模式下 OpenTab 文字更亮 */
+    --no-icon-bg: #323741; /* isShowBorder=false 时的背景（深色） */
+    --icon-bg: #323741; /* isShowBorder=true 时图标容器背景（深色） */
+    --menu-bg: #2a2a2a; /* 右键菜单背景（深色） */
+    --menu-border: #3a3a3a; /* 右键菜单边框（深色） */
+    --accent-color: #0078d4; /* 强调色（深色） */
+    --hover-bg: rgba(255, 255, 255, 0.1); /* 悬停背景（深色） */
+    --modal-bg: #2a2a2a; /* 弹窗背景（深色） */
+    --input-border: #3a3a3a; /* 输入框边框（深色） */
+  }
 }
 
 /* 全局重置 */
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-
 .container {
-    width: 100%;
-    max-width: 1200px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Logo */
 .logo {
-    margin-bottom: 40px;
-    text-align: center;
+  margin-bottom: 40px;
+  text-align: center;
 }
 
 .logo h1 {
-    font-size: 3.5rem;
-    font-weight: 300;
-    letter-spacing: 2px;
-    opacity: 0.9;
+  font-size: 3.5rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+  opacity: 0.9;
 }
 
 /* 搜索框区域 */
 .search-box {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 50px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 50px;
 }
 
 /* 新增：让表单填满区域并居中 */
 .search-box form {
-    width: 100%;
-    display: flex;
-    justify-content: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 /* Input 样式保持不变，但确保 max-width 生效 */
 .search-box input {
-    width: 100%;
-    max-width: 700px;
-    padding: 16px 24px;
-    border-radius: 30px;
-    border: 1px solid var(--input-border);
-    background-color: var(--input-bg);
-    color: var(--input-text);
-    font-size: 16px;
-    box-shadow: 0 4px 15px var(--shadow-color);
-    outline: none;
-    text-align: left;
-    transition: all 0.2s ease;
+  width: 100%;
+  max-width: 700px;
+  padding: 16px 24px;
+  border-radius: 30px;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  font-size: 16px;
+  box-shadow: 0 4px 15px var(--shadow-color);
+  outline: none;
+  text-align: left;
+  transition: all 0.2s ease;
 }
 
 /* 图标网格 */
 .grid-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    width: 100%;
-    margin-bottom: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 40px;
 }
 
 .site-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100px;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s, opacity 0.2s, transform 0.2s;
-    text-decoration: none;
-    color: inherit;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s,
+    transform 0.2s;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
 }
 
 .site-card:hover {
-    background-color: var(--hover-bg);
+  background-color: var(--hover-bg);
 }
 
 /* 拖拽时的样式 */
 .site-card.dragging {
-    opacity: 0.5;
-    transform: scale(0.9);
+  opacity: 0.5;
+  transform: scale(0.9);
 }
 
 /* 拖拽悬停目标的样式 */
 .site-card.drag-over {
-    background-color: var(--accent-color);
-    opacity: 0.8;
-    border-radius: 8px;
-    box-shadow: 0 0 8px var(--accent-color);
+  background-color: var(--accent-color);
+  opacity: 0.8;
+  border-radius: 8px;
+  box-shadow: 0 0 8px var(--accent-color);
 }
 
 .site-icon {
-    width: 60px;
-    height: 60px;
-    background-color: var(--icon-bg); /* 根据系统配色切换图标背景 */
-    border-radius: 12px;
-    margin-bottom: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px var(--shadow-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  width: 60px;
+  height: 60px;
+  background-color: var(--icon-bg); /* 根据系统配色切换图标背景 */
+  border-radius: 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px var(--shadow-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .site-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* 当 isShowBorder=true 时，图标设置为 75% 宽高 */
 .site-icon img.icon-with-border {
-    width: 75%;
-    height: 75%;
+  width: 75%;
+  height: 75%;
 }
 
 /* 当 isShowBorder=false 时，图标设置为 100% 宽高 */
 .site-icon img.icon-full-size {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 /* 当不显示边框但仍需填充背景时使用（根据主题自动为白或黑） */
 .site-icon.no-icon-bg {
-    background-color: var(--no-icon-bg);
-    box-shadow: none;
+  background-color: var(--no-icon-bg);
+  box-shadow: none;
 }
 
 /* 强制白底类（用于需要白底的图标，如 Pinterest） */
 .site-icon.force-white-bg {
-    background-color: #ffffff;
-    box-shadow: 0 4px 6px var(--shadow-color);
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px var(--shadow-color);
 }
 
 .site-icon.force-white-bg img {
-    object-fit: contain;
-    max-width: 70%;
-    max-height: 70%;
+  object-fit: contain;
+  max-width: 70%;
+  max-height: 70%;
 }
 
 .site-title {
-    font-size: 13px;
-    text-align: center;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    opacity: 0.9;
+  font-size: 13px;
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.9;
 }
 
 /* 禁止手动选中网站图标及下面的文字，防止拖拽图标 */
-.site-card, .site-card * {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+.site-card,
+.site-card * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .site-icon img,
 .avatar-preview img {
-    -webkit-user-drag: none;
-    user-drag: none;
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 /* 添加按钮 */
 .add-button-container {
-    position: fixed;    /* 核心：相对于浏览器窗口固定 */
-    top: 20px;         /* 距离顶部距离 */
-    right: 20px;       /* 距离右侧距离 */
-    z-index: 1000;     /* 确保它在所有内容之上，包括搜索框 */
-    margin-top: 0;     /* 移除之前的间距 */
+  position: fixed; /* 核心：相对于浏览器窗口固定 */
+  top: 20px; /* 距离顶部距离 */
+  right: 20px; /* 距离右侧距离 */
+  z-index: 1000; /* 确保它在所有内容之上，包括搜索框 */
+  margin-top: 0; /* 移除之前的间距 */
 }
 
 .add-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 1px solid var(--input-border);
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: 0.2s;
-    box-shadow: 0 2px 8px var(--shadow-color);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--input-border);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+  box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 .add-btn:hover {
-    background-color: var(--hover-bg);
-    transform: rotate(90deg);
+  background-color: var(--hover-bg);
+  transform: rotate(90deg);
 }
 
 /* 右键菜单 */
 .context-menu {
-    display: none;
-    position: absolute;
-    background-color: var(--menu-bg);
-    border: 1px solid var(--menu-border);
-    border-radius: 6px;
-    box-shadow: 0 4px 12px var(--shadow-color);
-    z-index: 1000;
-    min-width: 120px;
-    overflow: hidden;
+  display: none;
+  position: absolute;
+  background-color: var(--menu-bg);
+  border: 1px solid var(--menu-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  z-index: 1000;
+  min-width: 120px;
+  overflow: hidden;
 }
 
 .menu-item {
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text-color);
-    transition: background 0.1s;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-color);
+  transition: background 0.1s;
 }
 
-.menu-item:hover { background-color: var(--accent-color); color: #fff; }
-.menu-item.delete:hover { background-color: #ff4d4d; color: white; }
+.menu-item:hover {
+  background-color: var(--accent-color);
+  color: #fff;
+}
+.menu-item.delete:hover {
+  background-color: #ff4d4d;
+  color: white;
+}
 
 /* 弹窗 (Modal) */
 .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color:white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
 }
 
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
 
 .modal {
-    background-color: var(--modal-bg);
-    color: var(--text-color);
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    border: 1px solid var(--input-border);
+  background-color: var(--modal-bg);
+  color: var(--text-color);
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--input-border);
 }
 
-.modal h2 { margin-bottom: 20px; font-weight: 400; text-align: center; }
+.modal h2 {
+  margin-bottom: 20px;
+  font-weight: 400;
+  text-align: center;
+}
 
-.form-group { margin-bottom: 15px; }
-.form-group label { display: block; margin-bottom: 5px; font-size: 12px; opacity: 0.7; }
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  opacity: 0.7;
+}
 .form-group input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid var(--input-border);
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    outline: none;
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  outline: none;
 }
-.form-group input:focus { border-color: var(--accent-color); }
-.avatar-row { display:flex; align-items:center; }
-.avatar-preview { width:64px; height:64px; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:var(--icon-bg); border:1px solid var(--input-border); cursor:pointer; }
-.avatar-preview img { width:100%; height:100%; object-fit:cover; }
+.form-group input:focus {
+  border-color: var(--accent-color);
+}
+.avatar-row {
+  display: flex;
+  align-items: center;
+}
+.avatar-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--icon-bg);
+  border: 1px solid var(--input-border);
+  cursor: pointer;
+}
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-.divider { font-size: 12px; opacity: 0.5; margin: 8px 0; text-align: center;}
+.divider {
+  font-size: 12px;
+  opacity: 0.5;
+  margin: 8px 0;
+  text-align: center;
+}
 
 .modal-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
 }
 
 .modal-buttons button {
-    padding: 8px 20px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
+  padding: 8px 20px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
 }
 
-#modal-cancel { background: transparent; color: var(--text-color); border: 1px solid var(--input-border); opacity: 0.7; }
-#modal-cancel:hover { opacity: 1; border-color: var(--text-color); }
+#modal-cancel {
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--input-border);
+  opacity: 0.7;
+}
+#modal-cancel:hover {
+  opacity: 1;
+  border-color: var(--text-color);
+}
 
-#modal-save { background-color: var(--accent-color); color: #000; }
-#modal-save:hover { filter: brightness(1.1); }
+#modal-save {
+  background-color: var(--accent-color);
+  color: #000;
+}
+#modal-save:hover {
+  filter: brightness(1.1);
+}
 body {
-    /* 使用渐变背景 */
-    
-    background: var(--bg-gradient, var(--bg-color));
-    background-color: var(--bg-color); /* 备用底色 */
-    background-attachment: fixed;
-    transition: all 0.4s ease; /* 让颜色切换更丝滑 */
+  /* 使用渐变背景 */
 
-    color: var(--text-color);
-    font-family: "Segoe UI", system-ui, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: background 0.5s ease;
+  background: var(--bg-gradient, var(--bg-color));
+  background-color: var(--bg-color); /* 备用底色 */
+  background-attachment: fixed;
+  transition: all 0.4s ease; /* 让颜色切换更丝滑 */
+
+  color: var(--text-color);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.5s ease;
 }
 /* Logo 外层容器 */
 .logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 50px;
-    gap: 15px; /* 图标和文字的间距 */
-    user-select: none; /* 防止文字被选中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 50px;
+  gap: 15px; /* 图标和文字的间距 */
+  user-select: none; /* 防止文字被选中 */
 }
 
 /* OpenTab 图标 - 基础矩形加号样式（还原） */
 .ot-logo {
-    position: relative;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: relative;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ot-logo::before {
-    content: '';
-    position: absolute;
-    width: 42px;
-    height: 30px;
-    background: linear-gradient(135deg, #0078d4 0%, #00d4ff 100%);
-    border-radius: 4px;
-    box-shadow: -4px 4px 0 rgba(0, 120, 212, 0.3), inset 0 -2px 4px rgba(0,0,0,0.1);
+  content: "";
+  position: absolute;
+  width: 42px;
+  height: 30px;
+  background: linear-gradient(135deg, #0078d4 0%, #00d4ff 100%);
+  border-radius: 4px;
+  box-shadow:
+    -4px 4px 0 rgba(0, 120, 212, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .ot-logo::after {
-    content: '+';
-    position: absolute;
-    color: #ffffff;
-    font-size: 28px;
-    font-weight: 300;
-    line-height: 1;
-    z-index: 1;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  content: "+";
+  position: absolute;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* OpenTab 文字样式 */
 .ot-text {
-    font-size: 42px;
-    font-weight: 600; /* Segoe UI Bold 风格 */
-    color: var(--text-color);
-    font-family: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, sans-serif;
-    letter-spacing: -1.5px; /* 紧凑的字间距 */
-    /* 稍微调低透明度使其更柔和，像图片里那样 */
-    opacity: 0.85; 
+  font-size: 42px;
+  font-weight: 600; /* Segoe UI Bold 风格 */
+  color: var(--text-color);
+  font-family:
+    "Segoe UI",
+    "Segoe UI Web (West European)",
+    "Segoe UI",
+    -apple-system,
+    sans-serif;
+  letter-spacing: -1.5px; /* 紧凑的字间距 */
+  /* 稍微调低透明度使其更柔和，像图片里那样 */
+  opacity: 0.85;
 }
 
 .ot-id {
-    display: block;
-    font-size: 12px;
-    opacity: 0.7;
-    margin-top: 4px;
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 4px;
 }
 
 .ot-avatar-img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
 }
 
 /* 当有自定义头像时，隐藏默认的矩形 + 号样式 */
 .logo.has-avatar .ot-logo::before,
 .logo.has-avatar .ot-logo::after {
-    display: none !important;
+  display: none !important;
 }
 
 .logo.has-avatar .ot-logo {
-    width: 60px;
-    height: 60px;
+  width: 60px;
+  height: 60px;
 }
 
 /* 微调：深浅模式下的文字阴影（可选，增加质感） */
 @media (prefers-color-scheme: light) {
-    .ot-text {
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
+  .ot-text {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
 }
 
 /* OpenTab 图标 - 圆形徽章备用样式 */
 .ot-logo-alt {
-    position: relative;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: relative;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ot-logo-alt::before {
-    content: '';
-    position: absolute;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #ffd166 0%, #f77f00 60%);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.18), inset 0 -4px 8px rgba(0,0,0,0.06);
+  content: "";
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffd166 0%, #f77f00 60%);
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.18),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.06);
 }
 
 .ot-logo-alt::after {
-    content: 'OT';
-    position: absolute;
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 18px;
-    z-index: 1;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  content: "OT";
+  position: absolute;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 18px;
+  z-index: 1;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
 
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  height: 20px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  margin: 0;
+}
+#show-border-checkbox {
+  display: inline-block;
+  width: 20px;
 }
