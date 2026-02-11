@@ -362,11 +362,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 previewImg.src = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
             }
             
-            // 新增：设置暗色预览图
+            // 修改：仅当 darkicon 存在时才设置预览图，否则设为空
             if (site.darkicon) {
                 darkPreviewImg.src = site.darkicon;
             } else {
-                darkPreviewImg.src = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
+                darkPreviewImg.src = ''; // 保持为空
             }
             
             // 添加：设置复选框状态
