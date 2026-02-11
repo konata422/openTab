@@ -20,7 +20,8 @@
     "default_title": "__MSG_actionTitle__"
   },
   "icons": {
-    "128": "icon/extensionicon.png"
+    "128": "icon/extensionicon.png",
+    "256": "icon/extensionicon256.png"
   },
   "web_accessible_resources": [
     {
