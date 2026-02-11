@@ -11,8 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputName = document.getElementById('site-name');
     const inputUrl = document.getElementById('site-url');
     const inputIconUrl = document.getElementById('site-icon-url');
+    const inputDarkIconUrl = document.getElementById('site-dark-icon-url'); // 新增：暗色图标输入框
     const inputFile = document.getElementById('site-icon-file');
-    const showBorderCheckbox = document.getElementById('show-border-checkbox'); // 新增：获取复选框元素
+    const showBorderCheckbox = document.getElementById('show-border-checkbox');
     // const inputId = document.getElementById('site-id'); // 原代码未解构，保留引用
     const avatarPreview = document.getElementById('avatar-preview');
     // const avatarPreviewImg = document.getElementById('avatar-preview-img'); // 使用时直接获取
@@ -44,13 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. 初始化数据 ---
     const defaultSites = [
-        { name: 'Google', url: 'https://www.google.com', icon: '', isShowBorder: true },
-        { name: 'YouTube', url: 'https://www.youtube.com', icon: '', isShowBorder: true },
-        { name: 'Bilibili', url: 'https://www.bilibili.com', icon: '', isShowBorder: true },
-        { name: 'Reddit', url: 'https://www.reddit.com', icon: '', isShowBorder: true },
-        { name: 'Gemini', url: 'https://gemini.google.com/app?hl=zh', icon: '', isShowBorder: true },
-        { name: 'Pinterest', url: 'https://www.pinterest.com', icon: '', isShowBorder: false },
-        { name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: '', isShowBorder: true }
+        { name: 'Google', url: 'https://www.google.com', icon: '', darkicon: '', isShowBorder: true },
+        { name: 'YouTube', url: 'https://www.youtube.com', icon: '', darkicon: '', isShowBorder: true },
+        { name: 'Bilibili', url: 'https://www.bilibili.com', icon: '', darkicon: '', isShowBorder: true },
+        { name: 'Reddit', url: 'https://www.reddit.com', icon: '', darkicon: '', isShowBorder: true },
+        { name: 'Gemini', url: 'https://gemini.google.com/app?hl=zh', icon: '', darkicon: '', isShowBorder: true },
+        { name: 'Pinterest', url: 'https://www.pinterest.com', icon: '', darkicon: '', isShowBorder: false },
+        { name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: '', darkicon: '', isShowBorder: true }
     ];
 
     // 启动加载 (合并加载 Sites 和 Profile)
@@ -119,16 +120,39 @@ document.addEventListener('DOMContentLoaded', () => {
             const img = document.createElement('img');
             img.alt = site.name || '';
 
-            // 1. 构建候选列表
+            // 检测当前是否为暗色模式
+            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // 1. 构建候选列表 - 根据当前主题模式决定优先级
             const googleFavicon = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
             const candidates = [];
 
-            // 优先使用已存储的 (可能是 Base64)
-            if (site.icon) candidates.push(site.icon);
-            // 本地路径尝试
-            if (site.icon && !site.icon.match(/^https?:|^data:|^\//)) candidates.push('./' + site.icon);
-            // Google API 兜底
-            candidates.push(googleFavicon);
+            console.log('isDark',isDarkMode)
+
+            // 根据当前主题模式决定使用哪个字段作为首选
+            if (isDarkMode) {
+                // 暗色模式：优先使用 darkicon，其次 icon
+                console.log('darkicon',site.darkicon)
+                if (site.darkicon) {
+                    candidates.push(site.darkicon);
+                }
+                if (site.icon && site.icon !== site.darkicon) {
+                    candidates.push(site.icon);
+                }
+            } else {
+                // 亮色模式：优先使用 icon，其次 darkicon
+                if (site.icon) {
+                    candidates.push(site.icon);
+                }
+                if (site.darkicon && site.darkicon !== site.icon) {
+                    candidates.push(site.darkicon);
+                }
+            }
+            
+            // 只有当没有任何用户配置的图标时，才使用 Google favicon 作为兜底
+            if (candidates.length === 0) {
+                candidates.push(googleFavicon);
+            }
 
             let tryIndex = 0;
 
@@ -144,15 +168,19 @@ document.addEventListener('DOMContentLoaded', () => {
             img.onload = async function () {
                 // 判断条件：当前显示的 src 是网络地址 (http开头)，且原本存储的不是 Base64 (data:开头)
                 // 这意味着我们是从网络 (Google API 或 URL) 加载的图片，需要转换并保存
-                if (img.src.startsWith('http') && (!site.icon || !site.icon.startsWith('data:'))) {
-
-                    // 防止重复执行：如果当前 src 和 site.icon 完全一样(即只是普通URL)，也进行转换
-                    // 但通常 site.icon 此时可能是空的，或者是一个失效的旧 URL
-
+                // 为了简化存储管理，统一将缓存的 Base64 数据保存到 icon 字段
+                const originalIconValue = sites[index].icon;
+                const originalDarkIconValue = sites[index].darkicon;
+                
+                // 检查是否是从网络加载了新的图标（而非使用本地已有的Base64）
+                if (img.src.startsWith('http') && 
+                    !(originalIconValue && originalIconValue.startsWith('data:')) &&
+                    !(originalDarkIconValue && originalDarkIconValue.startsWith('data:'))) {
+                    
                     const base64Data = await urlToBase64(img.src);
 
                     if (base64Data) {
-                        // 更新内存数据
+                        // 统一将缓存的 Base64 数据保存到 icon 字段，保持 darkicon 仅用于手动编辑
                         sites[index].icon = base64Data;
                         // 异步保存到 Chrome Storage
                         chrome.storage.local.set({ 'myTabSites': sites }, () => {
@@ -300,7 +328,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function openModal(isEdit) {
         modalOverlay.classList.remove('hidden');
         tempBase64Icon = null;
+        tempBase64DarkIcon = null; // 新增：重置暗色图标临时变量
         inputFile.value = '';
+        // 新增：重置暗色图标文件输入
+        const inputDarkFile = document.getElementById('site-dark-icon-file');
+        if (inputDarkFile) inputDarkFile.value = '';
 
         if (isEdit && currentEditIndex > -1) {
             const site = sites[currentEditIndex];
@@ -313,12 +345,28 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 inputIconUrl.value = '';
             }
+            
+            // 新增：设置暗色图标输入框值
+            if (site.darkicon && !site.darkicon.startsWith('data:')) {
+                inputDarkIconUrl.value = site.darkicon;
+            } else {
+                inputDarkIconUrl.value = '';
+            }
 
             const previewImg = document.getElementById('avatar-preview-img');
+            const darkPreviewImg = document.getElementById('dark-avatar-preview-img');
+            // 修改：分别设置亮色和暗色预览
             if (site.icon) {
                 previewImg.src = site.icon;
             } else {
                 previewImg.src = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
+            }
+            
+            // 新增：设置暗色预览图
+            if (site.darkicon) {
+                darkPreviewImg.src = site.darkicon;
+            } else {
+                darkPreviewImg.src = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
             }
             
             // 添加：设置复选框状态
@@ -329,7 +377,9 @@ document.addEventListener('DOMContentLoaded', () => {
             inputName.value = '';
             inputUrl.value = '';
             inputIconUrl.value = '';
+            inputDarkIconUrl.value = ''; // 新增：重置暗色图标输入框
             document.getElementById('avatar-preview-img').src = '';
+            document.getElementById('dark-avatar-preview-img').src = '';
             
             // 添加：新网站默认勾选复选框
             showBorderCheckbox.checked = true;
@@ -351,6 +401,19 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('avatar-preview-img').src = base64;
         });
     });
+
+    // 新增：暗色图标上传
+    const inputDarkFile = document.getElementById('site-dark-icon-file');
+    let tempBase64DarkIcon = null; // 新增：临时存储暗色图标 Base64
+    if (inputDarkFile) {
+        inputDarkFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFileSelect(file, (base64) => {
+                tempBase64DarkIcon = base64; // 存储到临时变量
+                document.getElementById('dark-avatar-preview-img').src = base64;
+            });
+        });
+    }
 
     // Profile 头像上传
     if (profileFile) {
@@ -385,6 +448,17 @@ document.addEventListener('DOMContentLoaded', () => {
             inputFile.click();
         });
     }
+    
+    // 新增：点击暗色预览图触发上传
+    const darkAvatarPreview = document.getElementById('dark-avatar-preview');
+    if (darkAvatarPreview) {
+        darkAvatarPreview.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const inputDarkFile = document.getElementById('site-dark-icon-file');
+            if (inputDarkFile) inputDarkFile.click();
+        });
+    }
+    
     if (profilePreview) {
         profilePreview.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -398,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = inputName.value.trim();
         const url = inputUrl.value.trim();
         const iconUrl = inputIconUrl.value.trim();
+        const darkIconUrl = inputDarkIconUrl.value.trim(); // 新增：获取暗色图标URL
         const idVal = (currentEditIndex > -1) ? (sites[currentEditIndex]?.id || '') : '';
 
         if (!name || !url) {
@@ -414,10 +489,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const oldIcon = sites[currentEditIndex].icon;
             if (oldIcon) finalIcon = oldIcon;
         }
+        
+        // 新增：处理暗色图标
+        let finalDarkIcon = '';
+        if (tempBase64DarkIcon) { // 优先使用上传的文件
+            finalDarkIcon = tempBase64DarkIcon;
+        } else if (darkIconUrl) {
+            finalDarkIcon = darkIconUrl;
+        } else if (currentEditIndex > -1) {
+            const oldDarkIcon = sites[currentEditIndex].darkicon;
+            if (oldDarkIcon) finalDarkIcon = oldDarkIcon;
+        }
 
         // 获取复选框的当前状态
         const isShowBorderVal = showBorderCheckbox.checked;
-        const newSite = { name, url, icon: finalIcon, isShowBorder: isShowBorderVal, id: idVal };
+        const newSite = { 
+            name, 
+            url, 
+            icon: finalIcon, 
+            darkicon: finalDarkIcon, // 新增：保存暗色图标
+            isShowBorder: isShowBorderVal, 
+            id: idVal 
+        };
 
         if (currentEditIndex > -1) {
             sites[currentEditIndex] = newSite;
@@ -425,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sites.push(newSite);
         }
 
-        saveSites(); // 这里的 saveSites 已经是改过后的 chrome.storage 版本
+        saveSites();
         closeModal();
     });
 
