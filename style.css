@@ -16,6 +16,7 @@
   --menu-bg: #ffffff; /* 右键菜单背景（浅色） */
   --menu-border: #e0e0e0; /* 右键菜单边框（浅色） */
   --accent-color: #0078d4; /* 强调色（浅色） */
+  --bookmark-selected: var(--accent-color); /* 搜索结果选中项背景（浅色默认） */
   --hover-bg: rgba(0, 0, 0, 0.05); /* 悬停背景（浅色） */
   --modal-bg: #ffffff; /* 弹窗背景（浅色） */
   --input-border: #d0d0d0; /* 输入框边框（浅色） */
@@ -39,6 +40,7 @@
     --menu-bg: #2a2a2a; /* 右键菜单背景（深色） */
     --menu-border: #3a3a3a; /* 右键菜单边框（深色） */
     --accent-color: #0078d4; /* 强调色（深色） */
+    --bookmark-selected: rgba(255, 255, 255, 0.06); /* 深色模式下选中项改为更浅、更接近未选中 */
     --hover-bg: rgba(255, 255, 255, 0.1); /* 悬停背景（深色） */
     --modal-bg: #2a2a2a; /* 弹窗背景（深色） */
     --input-border: #3a3a3a; /* 输入框边框（深色） */
@@ -59,6 +61,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+/* 保持容器最小高度并垂直居中其子项，避免底部内容加载改变垂直位置 */
+.container {
+  height: 100vh; /* 固定为视口高度，保持垂直居中稳定 */
+  justify-content: center;
+  overflow: auto; /* 内容超出时允许滚动 */
 }
 
 /* Logo */
@@ -82,6 +91,11 @@
   margin-bottom: 50px;
 }
 
+/* 使搜索容器为定位上下文，以便下方结果绝对定位不会遮挡 */
+.search-box {
+  position: relative;
+}
+
 /* 新增：让表单填满区域并居中 */
 .search-box form {
   width: 100%;
@@ -96,13 +110,28 @@
   padding: 16px 24px;
   border-radius: 30px;
   border: 1px solid var(--input-border);
-  background-color: var(--input-bg);
+  background-color: rgba(255, 255, 255, 1) !important; /* 纯白，不透明 */
   color: var(--input-text);
   font-size: 16px;
   box-shadow: 0 4px 15px var(--shadow-color);
   outline: none;
   text-align: left;
   transition: all 0.2s ease;
+}
+
+/* 用于在内容准备好后同时显示，避免布局跳动 */
+.invisible {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.visible {
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .search-box input {
+    background-color: #323741; /* 深色模式下的不透明背景 */
+  }
 }
 
 /* 图标网格 */
@@ -560,3 +589,64 @@ body {
   display: inline-block;
   width: 20px;
 }
+
+/* 收藏夹检索结果样式 */
+.bookmark-results {
+  position: absolute;
+  top: calc(100% + 8px); /* 紧贴搜索框下方，避免遮挡 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 700px;
+  background: rgba(255, 255, 255, 1) !important; /* 纯白不透明 */
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  z-index: 1300;
+  max-height: 320px; /* 限制高度，避免过长遮挡 */
+  overflow-y: auto;
+  padding: 0; /* 移除容器内边距，避免与选中项出现白边 */
+}
+
+@media (prefers-color-scheme: dark) {
+  .bookmark-results {
+    background: rgba(50, 55, 65, 1) !important; /* 深色模式下也保持纯不透明 */
+  }
+}
+.bookmark-results.hidden { display: none; }
+.bookmark-item {
+  padding: 8px 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+  color: var(--text-color);
+}
+.bookmark-item:hover { background: var(--hover-bg); }
+.bookmark-item.selected { background: var(--bookmark-selected); color: #fff; }
+
+/* 当第一个或最后一个项被选中时，使其圆角与容器一致，避免出现白边 */
+.bookmark-item.selected:first-child {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+.bookmark-item.selected:last-child {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+.bookmark-item .fav-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex: 0 0 28px;
+}
+.bookmark-item .fav-icon img { width: 100%; height: 100%; object-fit: cover; }
+.bookmark-item .meta { font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.bookmark-item .meta div { line-height: 1.1; }
+.bookmark-item .meta div:nth-child(2) { font-size: 12px; opacity: 0.75; }
+
+/* 搜索框右侧的收藏开关 */
+/* bookmark-toggle 已移除，使用前缀 '/' 触发书签检索 */
+.bookmark-auth { padding: 12px; display:flex; gap:8px; justify-content:space-between; align-items:center; }
+.bookmark-auth button { padding:6px 10px; border-radius:6px; border:1px solid var(--input-border); background:var(--accent-color); color:#fff; cursor:pointer; }

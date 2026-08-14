@@ -12,6 +12,9 @@
     "unlimitedStorage",
     "tabs"
   ],
+  "optional_permissions": [
+    "bookmarks"
+  ],
   "host_permissions": [
     "https://www.google.com/*",
     "*://*/*"

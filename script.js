@@ -57,6 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 启动加载 (合并加载 Sites 和 Profile)
     loadData();
 
+    // 初始：先把 logo、搜索 框和网格隐藏（通过类控制可见性），等内容准备好一次性显示
+    const searchBoxElem = document.querySelector('.search-box');
+    const toggleElements = [otLogoContainer, searchBoxElem, gridContainer];
+    toggleElements.forEach(el => { if (el) el.classList.add('invisible'); });
+
     function loadData() {
         // 使用 chrome.storage.local.get 读取数据
         chrome.storage.local.get(['myTabSites', 'openTabProfile'], (result) => {
@@ -108,6 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 2. 渲染网格 ---
     function renderGrid() {
         gridContainer.innerHTML = '';
+        const frag = document.createDocumentFragment();
+        const loadPromises = [];
+
         sites.forEach((site, index) => {
             const card = document.createElement('div');
             card.className = 'site-card';
@@ -127,72 +135,48 @@ document.addEventListener('DOMContentLoaded', () => {
             const googleFavicon = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
             const candidates = [];
 
-            console.log('isDark',isDarkMode)
-
             // 根据当前主题模式决定使用哪个字段作为首选
             if (isDarkMode) {
-                // 暗色模式：优先使用 darkicon，其次 icon
-                console.log('darkicon',site.darkicon)
-                if (site.darkicon) {
-                    candidates.push(site.darkicon);
-                }
-                if (site.icon && site.icon !== site.darkicon) {
-                    candidates.push(site.icon);
-                }
+                if (site.darkicon) candidates.push(site.darkicon);
+                if (site.icon && site.icon !== site.darkicon) candidates.push(site.icon);
             } else {
-                // 亮色模式：优先使用 icon，其次 darkicon
-                if (site.icon) {
-                    candidates.push(site.icon);
-                }
-                if (site.darkicon && site.darkicon !== site.icon) {
-                    candidates.push(site.darkicon);
-                }
+                if (site.icon) candidates.push(site.icon);
+                if (site.darkicon && site.darkicon !== site.icon) candidates.push(site.darkicon);
             }
-            
-            // 只有当没有任何用户配置的图标时，才使用 Google favicon 作为兜底
-            if (candidates.length === 0) {
-                candidates.push(googleFavicon);
-            }
+            if (candidates.length === 0) candidates.push(googleFavicon);
 
             let tryIndex = 0;
 
-            // 加载失败尝试下一个
-            img.onerror = function () {
-                tryIndex++;
-                if (tryIndex < candidates.length) {
-                    img.src = candidates[tryIndex];
-                }
-            };
-
-            // --- 核心修改：加载成功后转 Base64 存储 ---
-            img.onload = async function () {
-                // 判断条件：当前显示的 src 是网络地址 (http开头)，且原本存储的不是 Base64 (data:开头)
-                // 这意味着我们是从网络 (Google API 或 URL) 加载的图片，需要转换并保存
-                // 为了简化存储管理，统一将缓存的 Base64 数据保存到 icon 字段
-                const originalIconValue = sites[index].icon;
-                const originalDarkIconValue = sites[index].darkicon;
-                
-                // 检查是否是从网络加载了新的图标（而非使用本地已有的Base64）
-                if (img.src.startsWith('http') && 
-                    !(originalIconValue && originalIconValue.startsWith('data:')) &&
-                    !(originalDarkIconValue && originalDarkIconValue.startsWith('data:'))) {
-                    
-                    const base64Data = await urlToBase64(img.src);
-
-                    if (base64Data) {
-                        // 统一将缓存的 Base64 数据保存到 icon 字段，保持 darkicon 仅用于手动编辑
-                        sites[index].icon = base64Data;
-                        // 异步保存到 Chrome Storage
-                        chrome.storage.local.set({ 'myTabSites': sites }, () => {
-                            console.log(`Base64 saved for ${site.name}`);
-                        });
+            const p = new Promise((resolve) => {
+                img.onerror = function () {
+                    tryIndex++;
+                    if (tryIndex < candidates.length) {
+                        img.src = candidates[tryIndex];
+                    } else {
+                        resolve();
                     }
-                }
-            };
+                };
 
-            // 启动加载
+                img.onload = async function () {
+                    resolve();
+                    try {
+                        const originalIconValue = sites[index].icon;
+                        const originalDarkIconValue = sites[index].darkicon;
+                        if (img.src.startsWith('http') && 
+                            !(originalIconValue && originalIconValue.startsWith('data:')) &&
+                            !(originalDarkIconValue && originalDarkIconValue.startsWith('data:'))) {
+                            const base64Data = await urlToBase64(img.src);
+                            if (base64Data) {
+                                sites[index].icon = base64Data;
+                                chrome.storage.local.set({ 'myTabSites': sites });
+                            }
+                        }
+                    } catch (e) { }
+                };
+            });
+
             img.src = candidates[0] || googleFavicon;
-
+            loadPromises.push(p);
             iconDiv.appendChild(img);
 
             const titleDiv = document.createElement('div');
@@ -255,7 +239,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 draggedIndex = null;
             });
 
-            gridContainer.appendChild(card);
+            frag.appendChild(card);
+        });
+
+        gridContainer.appendChild(frag);
+
+        const timeout = new Promise(res => setTimeout(res, 500));
+        Promise.race([Promise.all(loadPromises), timeout]).then(() => {
+            try { toggleElements.forEach(el => { if (el) { el.classList.remove('invisible'); el.classList.add('visible'); } }); } catch(e){}
         });
     }
 
@@ -575,4 +566,202 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- 8. 收藏夹检索与键盘导航 ---
+    const bookmarkResults = document.getElementById('bookmark-results');
+    let bookmarkMatches = [];
+    let bookmarkSelected = -1;
+    let bookmarkDebounceTimer = null;
+
+    function hasBookmarksPermission(callback) {
+        if (chrome.permissions && chrome.permissions.contains) {
+            chrome.permissions.contains({ permissions: ['bookmarks'] }, (granted) => {
+                callback(granted);
+            });
+        } else {
+            callback(false);
+        }
+    }
+
+    function requestBookmarksPermission() {
+        if (chrome.permissions && chrome.permissions.request) {
+            chrome.permissions.request({ permissions: ['bookmarks'] }, (granted) => {
+                if (granted) {
+                    // re-run search if there is a query
+                    performBookmarkSearch(searchInput.value.trim());
+                } else {
+                    renderAuthPrompt();
+                }
+            });
+        } else {
+            alert('请求收藏夹权限失败。');
+        }
+    }
+
+    function renderAuthPrompt() {
+        bookmarkResults.innerHTML = '';
+        const div = document.createElement('div');
+        div.className = 'bookmark-auth';
+        div.innerHTML = `<div>需要授权访问收藏夹以检索本地书签</div>`;
+        const btn = document.createElement('button');
+        btn.textContent = '允许访问收藏夹';
+        btn.addEventListener('click', () => requestBookmarksPermission());
+        div.appendChild(btn);
+        bookmarkResults.appendChild(div);
+        showBookmarkResults();
+    }
+
+    function performBookmarkSearch(query) {
+        if (!query) {
+            hideBookmarkResults();
+            return;
+        }
+        hasBookmarksPermission((granted) => {
+            if (!granted) {
+                renderAuthPrompt();
+                return;
+            }
+
+            try {
+                chrome.bookmarks.search(query, (results) => {
+                    // 仅根据标题匹配（忽略 URL），并跳过文件夹
+                    const qLower = query.toLowerCase();
+                    const filtered = (results || [])
+                        .filter(r => r.url && r.title && r.title.toLowerCase().includes(qLower))
+                        .sort((a, b) => {
+                            const aTitle = a.title || '';
+                            const bTitle = b.title || '';
+                            const aIdx = aTitle.toLowerCase().indexOf(qLower);
+                            const bIdx = bTitle.toLowerCase().indexOf(qLower);
+                            if (aIdx !== bIdx) return aIdx - bIdx; // 首次出现位置靠前的排前
+                            const lenDiff = aTitle.length - bTitle.length;
+                            if (lenDiff !== 0) return lenDiff; // 标题更短的排前
+                            return aTitle.localeCompare(bTitle);
+                        })
+                        .slice(0, 6);
+                    bookmarkMatches = filtered;
+                    bookmarkSelected = -1;
+                    renderBookmarkMatches();
+                });
+            } catch (e) {
+                console.warn('bookmark search error', e);
+                hideBookmarkResults();
+            }
+        });
+    }
+
+    function renderBookmarkMatches() {
+        bookmarkResults.innerHTML = '';
+        if (!bookmarkMatches || bookmarkMatches.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'bookmark-item';
+            empty.textContent = '未找到匹配的收藏夹';
+            bookmarkResults.appendChild(empty);
+            showBookmarkResults();
+            return;
+        }
+
+        bookmarkMatches.forEach((b, idx) => {
+            const item = document.createElement('div');
+            item.className = 'bookmark-item';
+            item.dataset.index = idx;
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'fav-icon';
+            const img = document.createElement('img');
+            // use google favicon as fallback
+            img.src = b.url ? `https://www.google.com/s2/favicons?sz=128&domain_url=${b.url}` : '';
+            iconWrap.appendChild(img);
+
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            meta.innerHTML = `<div style="font-weight:600">${b.title || b.url}</div><div style="font-size:12px;opacity:0.7">${b.url || ''}</div>`;
+
+            item.appendChild(iconWrap);
+            item.appendChild(meta);
+
+            item.addEventListener('click', (e) => {
+                openBookmark(b);
+            });
+
+            bookmarkResults.appendChild(item);
+        });
+
+        showBookmarkResults();
+    }
+
+    function showBookmarkResults() {
+        bookmarkResults.classList.remove('hidden');
+        bookmarkResults.setAttribute('aria-hidden', 'false');
+    }
+
+    function hideBookmarkResults() {
+        bookmarkResults.classList.add('hidden');
+        bookmarkResults.setAttribute('aria-hidden', 'true');
+    }
+
+    function updateSelection() {
+        const items = bookmarkResults.querySelectorAll('.bookmark-item');
+        items.forEach(it => it.classList.remove('selected'));
+        if (bookmarkSelected >= 0 && items[bookmarkSelected]) {
+            items[bookmarkSelected].classList.add('selected');
+            // ensure visible
+            items[bookmarkSelected].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function openBookmark(b) {
+        if (!b || !b.url) return;
+        let url = b.url;
+        if (!url.startsWith('http')) url = 'https://' + url;
+        if (typeof chrome !== 'undefined' && chrome.tabs) {
+            chrome.tabs.update({ url: url });
+        } else {
+            window.open(url, '_self');
+        }
+    }
+
+    // 事件：输入时触发检索（防抖处理），仅当输入以 '/' 开头时检索书签
+    searchInput.addEventListener('input', (e) => {
+        const raw = e.target.value || '';
+        if (!raw.startsWith('/')) { hideBookmarkResults(); return; }
+        const q = raw.slice(1).trim();
+
+        if (bookmarkDebounceTimer) clearTimeout(bookmarkDebounceTimer);
+        bookmarkDebounceTimer = setTimeout(() => {
+            if (!q) { hideBookmarkResults(); return; }
+            performBookmarkSearch(q);
+        }, 260);
+    });
+
+    // 键盘导航
+    searchInput.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (bookmarkResults.classList.contains('hidden')) return;
+        if (key === 'ArrowDown') {
+            e.preventDefault();
+            if (bookmarkMatches.length === 0) return;
+            bookmarkSelected = Math.min(bookmarkSelected + 1, bookmarkMatches.length - 1);
+            updateSelection();
+        } else if (key === 'ArrowUp') {
+            e.preventDefault();
+            if (bookmarkMatches.length === 0) return;
+            bookmarkSelected = Math.max(bookmarkSelected - 1, 0);
+            updateSelection();
+        } else if (key === 'Enter') {
+            if (bookmarkSelected >= 0 && bookmarkMatches[bookmarkSelected]) {
+                e.preventDefault();
+                openBookmark(bookmarkMatches[bookmarkSelected]);
+            }
+        } else if (key === 'Escape') {
+            hideBookmarkResults();
+        }
+    });
+
+    // 点击页面任意处隐藏
+    document.addEventListener('click', (e) => {
+        if (!bookmarkResults.contains(e.target) && e.target !== searchInput) {
+            hideBookmarkResults();
+        }
+    });
 });

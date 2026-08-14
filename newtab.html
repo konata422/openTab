@@ -8,13 +8,13 @@
 
   <body>
     <div class="container">
-      <div class="logo" id="opentab-logo">
+      <div class="logo invisible" id="opentab-logo">
         <div class="ot-logo"></div>
         <span class="ot-text">OpenTab</span>
         <span class="ot-id" id="opentab-id"></span>
       </div>
 
-      <div class="search-box">
+      <div class="search-box invisible">
         <form id="search-form">
           <input
             type="text"
@@ -23,9 +23,11 @@
             autocomplete="off"
           />
         </form>
+        <!-- 收藏夹检索结果容器 -->
+        <div id="bookmark-results" class="bookmark-results hidden" aria-hidden="true"></div>
       </div>
 
-      <div class="grid-container" id="site-grid"></div>
+      <div class="grid-container invisible" id="site-grid"></div>
 
       <div class="add-button-container">
         <button id="add-site-btn" class="add-btn">+</button>
