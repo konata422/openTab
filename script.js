@@ -551,17 +551,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 7. 搜索功能 ---
+    function resolveSearchTarget(query) {
+        const value = (query || '').trim();
+        if (!value) return null;
+
+        const specialMatch = value.match(/^-(g|w)\s+(.+)$/i);
+        if (specialMatch) {
+            const engine = specialMatch[1].toLowerCase();
+            const keyword = specialMatch[2].trim();
+            if (!keyword) return null;
+
+            if (engine === 'g') {
+                return `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
+            }
+            return `https://zh.wikipedia.org/w/index.php?search=${encodeURIComponent(keyword)}`;
+        }
+
+        return `https://www.bing.com/search?q=${encodeURIComponent(value)}`;
+    }
+
     const searchForm = document.getElementById('search-form');
     if (searchForm && searchInput) {
         searchForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const query = searchInput.value.trim();
-            if (query) {
-                const targetUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+            const targetUrl = resolveSearchTarget(searchInput.value);
+            if (targetUrl) {
                 if (typeof chrome !== 'undefined' && chrome.tabs) {
                     chrome.tabs.update({ url: targetUrl });
                 } else {
-                    window.open(targetUrl);
+                    window.open(targetUrl, '_self');
                 }
             }
         });
@@ -666,18 +684,10 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = 'bookmark-item';
             item.dataset.index = idx;
 
-            const iconWrap = document.createElement('div');
-            iconWrap.className = 'fav-icon';
-            const img = document.createElement('img');
-            // use google favicon as fallback
-            img.src = b.url ? `https://www.google.com/s2/favicons?sz=128&domain_url=${b.url}` : '';
-            iconWrap.appendChild(img);
-
             const meta = document.createElement('div');
             meta.className = 'meta';
             meta.innerHTML = `<div style="font-weight:600">${b.title || b.url}</div><div style="font-size:12px;opacity:0.7">${b.url || ''}</div>`;
 
-            item.appendChild(iconWrap);
             item.appendChild(meta);
 
             item.addEventListener('click', (e) => {
@@ -724,14 +734,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // 事件：输入时触发检索（防抖处理），仅当输入以 '/' 开头时检索书签
     searchInput.addEventListener('input', (e) => {
         const raw = e.target.value || '';
-        if (!raw.startsWith('/')) { hideBookmarkResults(); return; }
-        const q = raw.slice(1).trim();
+        const trimmedRaw = raw.trim();
 
-        if (bookmarkDebounceTimer) clearTimeout(bookmarkDebounceTimer);
-        bookmarkDebounceTimer = setTimeout(() => {
-            if (!q) { hideBookmarkResults(); return; }
-            performBookmarkSearch(q);
-        }, 260);
+        if (/^-(g|w)(\s|$)/i.test(trimmedRaw) || raw.startsWith('/')) {
+            if (raw.startsWith('/')) {
+                const q = raw.slice(1).trim();
+                if (bookmarkDebounceTimer) clearTimeout(bookmarkDebounceTimer);
+                bookmarkDebounceTimer = setTimeout(() => {
+                    if (!q) { hideBookmarkResults(); return; }
+                    performBookmarkSearch(q);
+                }, 260);
+            } else {
+                hideBookmarkResults();
+            }
+            return;
+        }
+
+        hideBookmarkResults();
     });
 
     // 键盘导航
