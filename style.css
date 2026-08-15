@@ -130,7 +130,7 @@
 
 @media (prefers-color-scheme: dark) {
   .search-box input {
-    background-color: #323741; /* 深色模式下的不透明背景 */
+    background-color: #323741 !important; /* 深色模式下的不透明背景 */
   }
 }
 
