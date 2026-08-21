@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const addBtn = document.getElementById('add-site-btn');
     const contextMenu = document.getElementById('context-menu');
+    const colorSchemeMedia = typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-color-scheme: dark)')
+        : null;
 
     // Modal 元素 (网站编辑)
     const modalOverlay = document.getElementById('modal-overlay');
@@ -129,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             img.alt = site.name || '';
 
             // 检测当前是否为暗色模式
-            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDarkMode = colorSchemeMedia ? colorSchemeMedia.matches : false;
             
             // 1. 构建候选列表 - 根据当前主题模式决定优先级
             const googleFavicon = `https://www.google.com/s2/favicons?sz=128&domain_url=${site.url}`;
@@ -248,6 +251,18 @@ document.addEventListener('DOMContentLoaded', () => {
         Promise.race([Promise.all(loadPromises), timeout]).then(() => {
             try { toggleElements.forEach(el => { if (el) { el.classList.remove('invisible'); el.classList.add('visible'); } }); } catch(e){}
         });
+    }
+
+    // 系统主题变化时立即重新选择浅色/深色图标，无需刷新新标签页。
+    if (colorSchemeMedia) {
+        const handleColorSchemeChange = () => renderGrid();
+
+        if (typeof colorSchemeMedia.addEventListener === 'function') {
+            colorSchemeMedia.addEventListener('change', handleColorSchemeChange);
+        } else if (typeof colorSchemeMedia.addListener === 'function') {
+            // 兼容仍使用旧版 MediaQueryList API 的浏览器。
+            colorSchemeMedia.addListener(handleColorSchemeChange);
+        }
     }
 
     // 记得把 urlToBase64 函数放在 renderGrid 外面或者里面都可以
