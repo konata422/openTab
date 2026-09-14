@@ -280,7 +280,6 @@
 
 .add-btn:hover {
   background-color: var(--hover-bg);
-  transform: rotate(90deg);
 }
 
 /* 右键菜单 */
