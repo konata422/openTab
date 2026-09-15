@@ -7,6 +7,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const colorSchemeMedia = typeof window.matchMedia === 'function'
         ? window.matchMedia('(prefers-color-scheme: dark)')
         : null;
+    const favicon = document.getElementById('newtab-favicon');
+    const updateFavicon = () => {
+        if (favicon) {
+            favicon.href = colorSchemeMedia && colorSchemeMedia.matches
+                ? 'icon/newtab-dark.svg'
+                : 'icon/newtab.svg';
+        }
+    };
+    updateFavicon();
 
     // Modal 元素 (网站编辑)
     const modalOverlay = document.getElementById('modal-overlay');
@@ -255,7 +264,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 系统主题变化时立即重新选择浅色/深色图标，无需刷新新标签页。
     if (colorSchemeMedia) {
-        const handleColorSchemeChange = () => renderGrid();
+        const handleColorSchemeChange = () => {
+            updateFavicon();
+            renderGrid();
+        };
 
         if (typeof colorSchemeMedia.addEventListener === 'function') {
             colorSchemeMedia.addEventListener('change', handleColorSchemeChange);
