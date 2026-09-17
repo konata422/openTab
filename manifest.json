@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "default_locale": "zh_CN",
   "description": "__MSG_extDesc__",
   "chrome_url_overrides": {
@@ -23,8 +23,8 @@
     "default_title": "__MSG_actionTitle__"
   },
   "icons": {
-    "128": "icon/extensionicon.png",
-    "256": "icon/extensionicon256.png"
+    "128": "icon/newtab-128.png",
+    "256": "icon/newtab-256.png"
   },
   "web_accessible_resources": [
     {
